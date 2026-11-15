@@ -67,6 +67,9 @@ pacman-contrib
 imagemagick
 djvulibre
 librsvg
+catdoc
+glow
+antiword
 ffmpeg
 nsxiv
 zathura

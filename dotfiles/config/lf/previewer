@@ -1,21 +1,26 @@
 #!/bin/sh
-# inspired by lfimg https://github.com/thimc/lfimg
+# Inspired by lfimg: https://github.com/thimc/lfimg
 file="$1"
 w="$2"
 h="$3"
 x="$4"
 y="$5"
 
-cache="${XDG_CACHE_HOME:-$HOME/.cache}/navi/lfv"
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/lfv"
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
 image() {
-	[ -s "$1" ] && [ -p "$FIFO_UEBERZUG" ] || return 1
-	p=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')
-	printf '{"action":"add","identifier":"preview","x":%s,"y":%s,"width":%s,"height":%s,"scaler":"contain","path":"%s"}\n' \
-		"$x" "${2:-$y}" "$w" "${3:-$h}" "$p" > "$FIFO_UEBERZUG"
-	exit 1
+	[ -s "$1" ] || return 1
+	if [ -p "$FIFO_UEBERZUG" ]; then
+		p=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')
+		printf '{"action":"add","identifier":"preview","x":%s,"y":%s,"width":%s,"height":%s,"scaler":"contain","path":"%s"}\n' \
+			"$x" "${2:-$y}" "$w" "${3:-$h}" "$p" > "$FIFO_UEBERZUG"
+		exit 1
+	elif have chafa; then
+		chafa --size "${w}x${3:-$h}" -- "$1" 2>/dev/null && exit 1
+	fi
+	return 1
 }
 
 thumb() {
@@ -74,7 +79,11 @@ audio() {
 	case $secs in ''|*[!0-9]*) ;; *) row Length "$(printf '%d:%02d' $((secs / 60)) $((secs % 60)))" ;; esac
 	rate=$(printf '%s\n' "$meta" | grep -m1 '^bit_rate=' | cut -d= -f2)
 	case $rate in ''|*[!0-9]*) ;; *) row Bitrate "$((rate / 1000)) kbps" ;; esac
-	[ "$n" -eq 0 ] && file -Lb -- "$file" && n=1
+	if [ "$n" -eq 0 ]; then
+		desc=$(file -Lb -- "$file" | fold -s -w "$w")
+		printf '%s\n' "$desc"
+		n=$(printf '%s\n' "$desc" | wc -l)
+	fi
 
 	top=$((y + n + 1))
 	left=$((h - n - 1))
@@ -100,6 +109,9 @@ case "$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')" in
 		;;
 	*.epub)
 		firstimage 'cover.*\.(jpe?g|png)$' '\.(jpe?g|png)$'
+		;;
+	*.ino)
+		text --language=cpp
 		;;
 	*.md|*.markdown)
 		have glow && { glow -s dark -w "$w" -- "$file"; exit 0; }
@@ -183,6 +195,22 @@ case "$mimetype" in
 	application/vnd.oasis.opendocument.*)
 		xmltext content.xml
 		;;
+	application/msword)
+		out=
+		have catdoc && out=$(catdoc -w -- "$file" 2>/dev/null)
+		[ -z "$out" ] && have antiword && out=$(antiword -- "$file" 2>/dev/null)
+		[ -n "$out" ] && { printf '%s\n' "$out" | head -n 200 | fold -s -w "$w"; exit 0; }
+		;;
+	application/vnd.ms-excel)
+		out=
+		have xls2csv && out=$(xls2csv -- "$file" 2>/dev/null | tr -d '\f')
+		[ -n "$out" ] && { printf '%s\n' "$out" | head -n 200; exit 0; }
+		;;
+	application/x-object)
+		file -Lb -- "$file" | fold -s -w "$w"
+		have nm && nm -C -- "$file" 2>/dev/null | head -n 200
+		exit 0
+		;;
 	application/x-bittorrent)
 		have transmission-show && { transmission-show -- "$file"; exit 0; }
 		;;
@@ -200,5 +228,5 @@ case "$mimetype" in
 		;;
 esac
 
-file -Lb -- "$file"
+file -Lb -- "$file" | fold -s -w "$w"
 exit 0
