@@ -28,8 +28,10 @@ thumb() {
 }
 
 text() {
-	if have bat; then
-		bat --color=always --style=plain --line-range=:200 "$@" -- "$file"
+	bat=bat
+	have bat || bat=batcat
+	if have "$bat"; then
+		"$bat" --color=always --style=plain --line-range=:200 "$@" -- "$file"
 	else
 		head -n 200 -- "$file"
 	fi
@@ -56,33 +58,28 @@ firstimage() {
 }
 
 audio() {
-	meta=$(ffprobe -v quiet -of default=noprint_wrappers=1 \
-		-show_entries format=duration,bit_rate:format_tags "$file" 2>/dev/null)
-	tag() { printf '%s\n' "$meta" | grep -i -m1 "^TAG:$1=" | cut -d= -f2-; }
-	n=0
-	row() {
-		[ -n "$2" ] || return 0
-		printf '\033[38;2;139;154;184m%-8s\033[0m %s\n' "$1" "$2"
-		n=$((n + 1))
-	}
-	row Title "$(tag title)"
-	row Artist "$(tag artist)"
-	albumartist=$(tag album_artist)
-	[ "$albumartist" != "$(tag artist)" ] && row "Album by" "$albumartist"
-	row Album "$(tag album)"
-	row Track "$(tag track)"
-	row Disc "$(tag disc)"
-	row Year "$(tag date | cut -c1-4)"
-	row Genre "$(tag genre)"
-	secs=$(printf '%s\n' "$meta" | grep -m1 '^duration=' | cut -d= -f2 | cut -d. -f1)
-	case $secs in ''|*[!0-9]*) ;; *) row Length "$(printf '%d:%02d' $((secs / 60)) $((secs % 60)))" ;; esac
-	rate=$(printf '%s\n' "$meta" | grep -m1 '^bit_rate=' | cut -d= -f2)
-	case $rate in ''|*[!0-9]*) ;; *) row Bitrate "$((rate / 1000)) kbps" ;; esac
-	if [ "$n" -eq 0 ]; then
-		desc=$(file -Lb -- "$file" | fold -s -w "$w")
-		printf '%s\n' "$desc"
-		n=$(printf '%s\n' "$desc" | wc -l)
-	fi
+	info=$(ffprobe -v quiet -of default=noprint_wrappers=1 \
+		-show_entries format=duration,bit_rate:format_tags "$file" 2>/dev/null |
+		awk '
+		{
+			k = tolower($0); sub(/=.*/, "", k)
+			v = $0; sub(/^[^=]*=/, "", v)
+			if (k ~ /^tag:/) { k = substr(k, 5); if (!(k in t)) t[k] = v }
+			else if (k == "duration") d = v
+			else if (k == "bit_rate") b = v
+		}
+		function row(l, v) { if (v != "") printf "\033[38;2;139;154;184m%-8s\033[0m %s\n", l, v }
+		END {
+			row("Title", t["title"]); row("Artist", t["artist"])
+			if (t["album_artist"] != t["artist"]) row("Album by", t["album_artist"])
+			row("Album", t["album"]); row("Track", t["track"]); row("Disc", t["disc"])
+			row("Year", substr(t["date"], 1, 4)); row("Genre", t["genre"])
+			if (d ~ /^[0-9.]+$/) { s = int(d); row("Length", sprintf("%d:%02d", s / 60, s % 60)) }
+			if (b ~ /^[0-9]+$/) row("Bitrate", int(b / 1000) " kbps")
+		}')
+	[ -n "$info" ] || info=$(file -Lb -- "$file" | fold -s -w "$w")
+	printf '%s\n' "$info"
+	n=$(printf '%s\n' "$info" | wc -l)
 
 	top=$((y + n + 1))
 	left=$((h - n - 1))
