@@ -2365,7 +2365,7 @@ updatestatus(void)
 				text = s + 1;
 			}
 		}
-		statusw += statustextw(text) + 2;
+		statusw += statustextw(text);
 
 	}
 	Monitor *m;
