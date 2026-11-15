@@ -1,0 +1,17 @@
+#!/bin/bash
+
+. ~/.local/bin/bar-colors.sh
+
+case $BLOCK_BUTTON in
+	1) setsid -f "$TERMINAL" -e htop ;;
+	3) notify-send "CPU module" "Shows 1-minute load average.
+Left click opens htop." ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+load="$(cut -d' ' -f1 /proc/loadavg)"
+
+bg="$BAR_BORDER"
+fg="$BAR_TEXT"
+
+echo "^b${bg}^^c${fg}^ CPU ${load} ^d^"

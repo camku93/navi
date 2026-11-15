@@ -1,0 +1,122 @@
+# Navi packages (Arch package names). One per line; '#' starts a comment.
+# Anything the install script can't find in your repos is listed at the end.
+
+# build tools
+base-devel
+git
+curl
+unzip
+sudo
+
+# X and input
+xorg-server
+xorg-xinit
+xorg-xrandr
+xorg-xrdb
+xorg-xset
+xorg-xbacklight
+xorg-mkfontscale
+xf86-input-libinput
+libx11
+libxft
+libxinerama
+libxrandr
+harfbuzz
+fontconfig
+freetype2
+xclip
+
+# desktop
+picom
+dunst
+rofi
+feh
+libnotify
+xdg-utils
+brightnessctl
+udisks2
+maim
+xdotool
+
+# fonts and themes
+ttf-jetbrains-mono-nerd
+ttf-dejavu-nerd
+noto-fonts
+noto-fonts-emoji
+terminus-font
+breeze-icons
+gnome-themes-extra
+
+# shell and editors
+zsh
+zsh-autosuggestions
+zsh-syntax-highlighting
+vim
+neovim
+ripgrep
+fd
+bat
+tree-sitter-cli
+
+# files, media, music
+lf
+ueberzug
+ffmpegthumbnailer
+poppler
+pacman-contrib
+imagemagick
+djvulibre
+librsvg
+ffmpeg
+nsxiv
+zathura
+zathura-pdf-mupdf
+mpv
+tmux
+cava
+mpd
+mpc
+ncmpcpp
+pamixer
+pulsemixer
+pipewire
+pipewire-pulse
+pipewire-alsa
+wireplumber
+alsa-utils
+less
+htop
+fastfetch
+libqalculate
+btop
+calcurse
+
+# network, web, printing
+networkmanager
+librewolf
+cups
+system-config-printer
+
+# time and power
+chrony
+
+# mail (mutt-wizard itself is installed from source by install.sh)
+neomutt
+isync
+msmtp
+pass
+gnupg
+notmuch
+lynx
+ca-certificates
+gettext
+newsboat
+
+# extras
+man-db
+man-pages
+ntfs-3g
+dosfstools
+openssh
+yt-dlp
+

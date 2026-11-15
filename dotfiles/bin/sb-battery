@@ -1,0 +1,102 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+	3) notify-send "Battery module" "Shows battery level and charge status.
+- Scroll to adjust backlight." ;;
+	4) xbacklight -inc 10 ;;
+	5) xbacklight -dec 10 ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+. ~/.local/bin/bar-colors.sh
+
+icon_full=$(printf '\U000f0079')
+icon_10=$(printf '\U000f007a')
+icon_20=$(printf '\U000f007b')
+icon_30=$(printf '\U000f007c')
+icon_40=$(printf '\U000f007d')
+icon_50=$(printf '\U000f007e')
+icon_60=$(printf '\U000f007f')
+icon_70=$(printf '\U000f0080')
+icon_80=$(printf '\U000f0081')
+icon_90=$(printf '\U000f0082')
+icon_alert=$(printf '\U000f10cd')
+icon_chg=$(printf '\U000f0084')
+icon_chg10=$(printf '\U000f0085')
+icon_chg20=$(printf '\U000f0086')
+icon_chg30=$(printf '\U000f0087')
+icon_chg40=$(printf '\U000f0088')
+icon_chg50=$(printf '\U000f089d')
+icon_chg60=$(printf '\U000f0089')
+icon_chg70=$(printf '\U000f089e')
+icon_chg80=$(printf '\U000f008a')
+icon_chg90=$(printf '\U000f008b')
+icon_chg_outline=$(printf '\U000f089f')
+
+low=0
+out=""
+
+icon_for_level() {
+	c=$1
+	if [ "$c" -ge 90 ]; then echo "$icon_90"
+	elif [ "$c" -ge 80 ]; then echo "$icon_80"
+	elif [ "$c" -ge 70 ]; then echo "$icon_70"
+	elif [ "$c" -ge 60 ]; then echo "$icon_60"
+	elif [ "$c" -ge 50 ]; then echo "$icon_50"
+	elif [ "$c" -ge 40 ]; then echo "$icon_40"
+	elif [ "$c" -ge 30 ]; then echo "$icon_30"
+	elif [ "$c" -ge 20 ]; then echo "$icon_20"
+	elif [ "$c" -ge 10 ]; then echo "$icon_10"
+	else echo "$icon_alert"
+	fi
+}
+
+icon_for_charging_level() {
+	c=$1
+	if [ "$c" -ge 90 ]; then echo "$icon_chg"
+	elif [ "$c" -ge 80 ]; then echo "$icon_chg80"
+	elif [ "$c" -ge 70 ]; then echo "$icon_chg70"
+	elif [ "$c" -ge 60 ]; then echo "$icon_chg60"
+	elif [ "$c" -ge 50 ]; then echo "$icon_chg50"
+	elif [ "$c" -ge 40 ]; then echo "$icon_chg40"
+	elif [ "$c" -ge 30 ]; then echo "$icon_chg30"
+	elif [ "$c" -ge 20 ]; then echo "$icon_chg20"
+	elif [ "$c" -ge 10 ]; then echo "$icon_chg10"
+	else echo "$icon_chg_outline"
+	fi
+}
+
+set -- /sys/class/power_supply/BAT?*
+[ -e "$1" ] || exit 0
+for battery in /sys/class/power_supply/BAT?*; do
+	[ -n "${capacity+x}" ] && out="${out} "
+	stat="$(cat "$battery/status" 2>&1)"
+	capacity="$(cat "$battery/capacity" 2>&1)"
+
+	case "$stat" in
+		"Full")
+			icon="$icon_full"
+			;;
+		"Charging"|"Not charging")
+			icon="$(icon_for_charging_level "$capacity")"
+			;;
+		*)
+			icon="$(icon_for_level "$capacity")"
+			;;
+	esac
+
+	if [ "$stat" = "Discharging" ] && [ "$capacity" -le 15 ]; then
+		low=1
+	fi
+
+	out="${out}${icon} ${capacity}%"
+done
+
+if [ "$low" -eq 1 ]; then
+	bg="$BAR_ACCENT"
+else
+	bg="$BAR_MUTED"
+fi
+fg="$BAR_TEXT"
+
+echo "^b${bg}^^c${fg}^ ${out} ^d^"

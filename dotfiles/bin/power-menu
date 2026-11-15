@@ -1,0 +1,18 @@
+#!/bin/bash
+
+choice="$(printf 'Reboot\nPower Off\nLog Out\nSleep\n' | rofi -dmenu -theme ~/.config/rofi/power-menu.rasi -p "")"
+
+case "$choice" in
+        "Reboot")
+                sudo reboot
+                ;;
+        "Power Off")
+                sudo poweroff
+                ;;
+        "Log Out")
+                pkill -KILL -u "$USER" dwm
+                ;;
+        "Sleep")
+                loginctl suspend || systemctl suspend || sudo zzz
+                ;;
+esac

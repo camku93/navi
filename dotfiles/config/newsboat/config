@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Navi newsboat config
+
+auto-reload yes
+reload-time 120
+show-read-feeds no
+confirm-exit no
+
+# vim-style keys
+bind-key j down
+bind-key k up
+bind-key l open
+bind-key h quit
+bind-key g home
+bind-key G end
+
+# Navi colors
+color background default default
+color listnormal default default
+color listnormal_unread color5 default
+color listfocus default color4
+color listfocus_unread color5 color4 bold
+color info color4 default
+color article default default

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=lf
+GenericName=File Manager
+Comment=lf with file previews
+Exec=st -e lfv
+Terminal=false
+Categories=System;FileTools;FileManager;
+OnlyShowIn=navi;

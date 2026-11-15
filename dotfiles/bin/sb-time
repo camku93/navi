@@ -1,0 +1,38 @@
+#!/bin/bash
+
+. ~/.local/bin/bar-colors.sh
+
+clock=$(date '+%I')
+
+case "$clock" in
+	"00") icon=$(printf '\U000f1456') ;;
+	"01") icon=$(printf '\U000f144b') ;;
+	"02") icon=$(printf '\U000f144c') ;;
+	"03") icon=$(printf '\U000f144d') ;;
+	"04") icon=$(printf '\U000f144e') ;;
+	"05") icon=$(printf '\U000f144f') ;;
+	"06") icon=$(printf '\U000f1450') ;;
+	"07") icon=$(printf '\U000f1451') ;;
+	"08") icon=$(printf '\U000f1452') ;;
+	"09") icon=$(printf '\U000f1453') ;;
+	"10") icon=$(printf '\U000f1454') ;;
+	"11") icon=$(printf '\U000f1455') ;;
+	"12") icon=$(printf '\U000f1456') ;;
+esac
+
+case $BLOCK_BUTTON in
+        1) today=$(date +%-d)
+           hl="<b><span color='#e8eaf0'>&</span></b>"
+           c=$(cal | sed "s|\<$today\>|$hl|")
+           notify-send "This Month" "<tt>$c</tt>"
+           notify-send "Appointments" "$(calcurse -d3)" ;;
+	2) setsid -f "$TERMINAL" -e calcurse ;;
+	3) notify-send "Time module" "- Left click shows appointments/month
+- Middle click opens calcurse" ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+bg="$BAR_SECONDARY"
+fg="$BAR_TEXT"
+
+echo "^b${bg}^^c${fg}^ ${icon} $(date "+%a %I:%M%p") ^d^"

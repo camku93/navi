@@ -1,0 +1,17 @@
+[general]
+bars = 0
+framerate = 30
+
+[color]
+background = 'default'
+gradient = 1
+gradient_count = 3
+gradient_color_1 = '#5c6b8a'
+gradient_color_2 = '#b8567f'
+gradient_color_3 = '#e8eaf0'
+
+[input]
+method = pulse
+
+[input]
+method = pulse

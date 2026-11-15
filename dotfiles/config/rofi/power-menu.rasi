@@ -1,0 +1,60 @@
+configuration {
+        font: "DejaVuSansM Nerd Font Mono 12";
+	hover-select: true;
+	me-select-entry: "";
+	me-accept-entry: "MousePrimary";
+}
+
+window {
+        location: northeast;
+        anchor: northeast;
+        x-offset: -10px;
+        y-offset: 40px;
+        width: 180px;
+        background-color: #0d0d12;
+        border: 2px;
+        border-color: #b8567f;
+        border-radius: 6px;
+        padding: 8px;
+}
+
+mainbox {
+        background-color: #0d0d12;
+        children: [listview];
+}
+
+listview {
+        lines: 4;
+        background-color: #0d0d12;
+        spacing: 4px;
+}
+
+element normal.normal {
+        background-color: #4d2735;
+        text-color: #e8eaf0;
+        padding: 6px;
+        border-radius: 4px;
+}
+
+element alternate.normal {
+        background-color: #4d2735;
+        text-color: #e8eaf0;
+        padding: 6px;
+        border-radius: 4px;
+}
+
+element selected.normal {
+        background-color: #b8567f;
+        text-color: #e8eaf0;
+        padding: 6px;
+        border-radius: 4px;
+}
+
+element-text {
+        background-color: inherit;
+        text-color: inherit;
+}
+
+element-icon {
+        background-color: inherit;
+}

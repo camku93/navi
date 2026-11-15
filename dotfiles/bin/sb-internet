@@ -1,0 +1,36 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+	1) "$TERMINAL" -e nmtui; pkill -RTMIN+4 dwmblocks ;;
+	3) notify-send "Internet module" "- Click to connect
+- Shows ethernet icon when wired, Connected when on wifi,
+  Disconnected when neither is active." ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+. ~/.local/bin/bar-colors.sh
+
+icon_wifi=$(printf '\U000f05a9')
+icon_wifi_off=$(printf '\U000f05aa')
+icon_ethernet=$(printf '\U000f0200')
+
+eth_state="$(cat /sys/class/net/e*/operstate 2>/dev/null)"
+wifi_state="$(cat /sys/class/net/w*/operstate 2>/dev/null)"
+
+if [ "$eth_state" = "up" ]; then
+	text="${icon_ethernet}"
+elif [ "$wifi_state" = "up" ]; then
+	text="${icon_wifi} Connected"
+else
+	text="${icon_wifi_off} Disconnected"
+fi
+
+# VPN indicator, appended if active.
+if [ -n "$(cat /sys/class/net/tun*/operstate 2>/dev/null)" ]; then
+	text="${text} 🔒"
+fi
+
+bg="$BAR_SLATE"
+fg="$BAR_TEXT"
+
+echo "^b${bg}^^c${fg}^ ${text} ^d^"

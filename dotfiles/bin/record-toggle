@@ -1,0 +1,72 @@
+#!/bin/bash
+
+running="ffmpeg.*(x11grab|v4l2|alsa|pulse)"
+
+if pgrep -f "$running" > /dev/null; then
+        pkill -INT -f "$running"
+        notify-send "Recording" "Saved"
+        exit 0
+fi
+
+args=(-nostdin -loglevel error)
+ext=mkv
+
+case "$1" in
+        screen)
+                dir="$HOME/Videos/Screen Recordings"
+                size=$(xrandr | awk '/current/ {gsub(",", "", $10); print $8 "x" $10; exit}')
+                args+=(-f x11grab -framerate 30)
+                args+=(-video_size "$size" -i "$DISPLAY")
+                ;;
+        webcam)
+                dir="$HOME/Videos/Webcam Recordings"
+                args+=(-f v4l2 -i /dev/video0)
+                ;;
+        audio)
+                dir="$HOME/Music/Audio Recordings"
+                ext=m4a
+                ;;
+        *)
+                notify-send "Recording" "Usage: record-toggle screen|webcam|audio"
+                exit 1
+                ;;
+esac
+
+mkdir -p "$dir"
+name="$dir/$(date +%F_%H-%M-%S).$ext"
+
+# Audio: a real PulseAudio input if there is one (not a monitor),
+# else the first ALSA card that can record, else no audio
+audio=""
+list=$(timeout 3 pactl list short sources 2>/dev/null)
+src=$(echo "$list" | awk '$2 !~ /monitor/ {print $2; exit}')
+if [ -n "$src" ]; then
+        args+=(-f pulse -i "$src")
+        audio=1
+else
+        list=$(timeout 3 arecord -l 2>/dev/null)
+        card=$(echo "$list" | awk '/^card/ {print $2; exit}')
+        if [ -n "$card" ]; then
+                args+=(-f alsa -i "hw:${card%:},0")
+                audio=1
+        fi
+fi
+
+if [ "$1" = audio ]; then
+        if [ -z "$audio" ]; then
+                notify-send "Recording" "No microphone found"
+                exit 1
+        fi
+else
+        args+=(-c:v libx264 -preset veryfast -crf 23)
+fi
+
+args+=(-c:a aac "$name")
+ffmpeg "${args[@]}" &
+
+sleep 1
+if pgrep -f "$running" > /dev/null; then
+        notify-send "Recording" "Started. Press the key again to stop."
+else
+        notify-send "Recording" "Could not start (is the camera or microphone busy?)"
+fi

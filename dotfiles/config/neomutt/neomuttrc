@@ -1,0 +1,5 @@
+# Navi neomutt config.
+# mutt-wizard (mw -a you@example.com) writes ~/.config/mutt/muttrc.
+# This file loads it, then applies the Navi colors.
+source "~/.config/mutt/muttrc"
+source "~/.config/mutt/colors"

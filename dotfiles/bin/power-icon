@@ -1,0 +1,18 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+        1)
+                power-menu
+                ;;
+        3)
+                notify-send "Power module" "Left click opens reboot/poweroff/logout/sleep menu"
+                ;;
+esac
+
+. ~/.local/bin/bar-colors.sh
+
+icon=$(printf '\u23fb')
+bg="$BAR_DANGER"
+fg="$BAR_TEXT"
+
+echo "^b${bg}^^c${fg}^ ${icon} ^d^"

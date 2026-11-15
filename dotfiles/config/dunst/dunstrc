@@ -1,0 +1,26 @@
+[global]
+    font = JetBrainsMono Nerd Font Mono 11
+    markup = full
+    format = "<b>%s</b>\n%b"
+    background = "#0d0d12"
+    foreground = "#e8eaf0"
+    frame_color = "#b8567f"
+    frame_width = 2
+    corner_radius = 4
+    padding = 10
+    horizontal_padding = 10
+
+[urgency_low]
+    background = "#0d0d12"
+    foreground = "#e8eaf0"
+    frame_color = "#4d2735"
+
+[urgency_normal]
+    background = "#0d0d12"
+    foreground = "#e8eaf0"
+    frame_color = "#b8567f"
+
+[urgency_critical]
+    background = "#0d0d12"
+    foreground = "#e8eaf0"
+    frame_color = "#b8567f"

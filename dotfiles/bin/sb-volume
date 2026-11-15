@@ -1,0 +1,37 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+        1) setsid -w -f "$TERMINAL" -e pulsemixer; pkill -RTMIN+10 "${STATUSBAR:-dwmblocks}" ;;
+        2) pamixer --toggle-mute ;;
+        4) pamixer --increase 1 ;;
+        5) pamixer --decrease 1 ;;
+        3) notify-send "Volume module" "- Shows volume level.
+- Middle click to mute.
+- Scroll to change." ;;
+        6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+. ~/.local/bin/bar-colors.sh
+
+bg="$BAR_MUTED"
+fg="$BAR_TEXT"
+
+icon_mute=$(printf '\ueee8')
+icon_low=$(printf '\uf027')
+icon_high=$(printf '\uf028')
+
+if timeout 1 pamixer --get-mute | grep -q "true"; then
+        echo "^b${bg}^^c${fg}^ ${icon_mute} ^d^"
+        exit
+fi
+
+vol="$(timeout 1 pamixer --get-volume)"
+[ -z "$vol" ] && exit
+
+case 1 in
+        $((vol >= 70)) ) icon="$icon_high" ;;
+        $((vol >= 1)) ) icon="$icon_low" ;;
+        * ) echo "^b${bg}^^c${fg}^ ${icon_mute} ^d^" && exit ;;
+esac
+
+echo "^b${bg}^^c${fg}^ ${icon} ${vol}% ^d^"

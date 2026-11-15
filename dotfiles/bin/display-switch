@@ -1,0 +1,53 @@
+#!/bin/sh
+
+internal=$(xrandr --query | awk '/^(LVDS|eDP)[^ ]* connected/ {print $1; exit}')
+
+refresh_ui() {
+        [ -f "$HOME/.fehbg" ] && sh "$HOME/.fehbg"
+	pkill dwmblocks
+	dwmblocks &
+}
+
+[ -z "$internal" ] && { notify-send "Display switch" "No laptop screen found."; exit 1; }
+
+external=$(xrandr --query \
+	| grep " connected" \
+	| grep -v "^${internal}" \
+	| cut -d' ' -f1)
+
+if [ -z "$external" ]; then
+	notify-send "Display switch" "No external display detected."
+	exit 1
+fi
+
+choice=$(printf '%s\n' \
+	"Laptop only" \
+	"External only" \
+	"Extend" \
+	"Mirror" \
+	| rofi -dmenu -i -p "Display" \
+	-theme ~/.config/rofi/menu.rasi)
+[ -z "$choice" ] && exit
+
+case "$choice" in
+	"Laptop only")
+		xrandr --output "$internal" --auto \
+			--output "$external" --off
+		;;
+	"External only")
+		xrandr --output "$external" --auto \
+			--output "$internal" --off
+		;;
+	"Extend")
+		xrandr --output "$internal" --auto \
+			--output "$external" --auto \
+			--right-of "$internal"
+		;;
+	"Mirror")
+		xrandr --output "$internal" --auto \
+			--output "$external" --auto \
+			--same-as "$internal"
+		;;
+esac
+
+refresh_ui

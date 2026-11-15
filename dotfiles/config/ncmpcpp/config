@@ -1,0 +1,16 @@
+header_window_color = "white"
+volume_color = "white"
+main_window_color = "white"
+progressbar_color = "black"
+progressbar_elapsed_color = "magenta"
+statusbar_color = "white"
+player_state_color = "white"
+
+current_item_prefix = "$(magenta)$r"
+current_item_suffix = "$/r$(end)"
+
+song_columns_list_format = "(20)[magenta]{a} (6f)[white]{n} (50)[white]{t|f} (20)[blue]{b} (7f)[white]{l}"
+
+
+execute_on_song_change = "~/.local/bin/track-change.sh"
+empty_tag_color = "white"

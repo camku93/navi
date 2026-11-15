@@ -1,0 +1,49 @@
+#!/bin/bash
+
+theme=~/.config/rofi/menu.rasi
+list=""
+
+usb_disks=$(lsblk -rpno NAME,TYPE,TRAN \
+	| awk '$2 == "disk" && $3 == "usb" { print $1 }')
+
+for disk in $usb_disks; do
+	parts=$(lsblk -rpno NAME,TYPE "$disk" \
+		| awk '$2 == "part" { print $1 }')
+	for part in $parts; do
+		mp=$(lsblk -rno MOUNTPOINT "$part")
+		[ -n "$mp" ] && continue
+		label=$(lsblk -rno LABEL "$part")
+		[ -z "$label" ] && label="(no label)"
+		size=$(lsblk -rno SIZE "$part")
+		list+="[USB] $part — $label — $size"$'\n'
+	done
+done
+
+optical=$(lsblk -rpno NAME,TYPE \
+	| awk '$2 == "rom" { print $1 }')
+
+for disc in $optical; do
+	mp=$(lsblk -rno MOUNTPOINT "$disc")
+	[ -n "$mp" ] && continue
+	label=$(lsblk -rno LABEL "$disc")
+	[ -z "$label" ] && label="(disc, no label)"
+	list+="[Disc] $disc — $label"$'\n'
+done
+
+if [ -z "$list" ]; then
+	notify-send "Mount" "No unmounted USB drives or discs."
+	exit
+fi
+
+choice=$(printf '%s' "$list" \
+	| rofi -dmenu -i -p "Mount" -theme "$theme")
+[ -z "$choice" ] && exit
+
+device=$(echo "$choice" | awk '{ print $2 }')
+result=$(udisksctl mount -b "$device" 2>&1)
+
+if echo "$result" | grep -q "Mounted"; then
+	notify-send "Mount" "Mounted $choice"
+else
+	notify-send "Mount" "Failed to mount $choice"
+fi

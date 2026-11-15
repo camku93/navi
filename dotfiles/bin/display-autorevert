@@ -1,0 +1,25 @@
+#!/bin/sh
+
+internal=$(xrandr --query | awk '/^(LVDS|eDP)[^ ]* connected/ {print $1; exit}')
+
+was_external=0
+[ -z "$internal" ] && exit 0
+
+while true; do
+        sleep 2
+        connected_externals=$(xrandr --query 2>/dev/null \
+                | grep " connected" \
+                | grep -v "^${internal}")
+
+        if [ -z "$connected_externals" ]; then
+                if [ "$was_external" = "1" ]; then
+                        xrandr --auto 2>/dev/null
+			[ -f "$HOME/.fehbg" ] && sh "$HOME/.fehbg" 2>/dev/null
+                        pkill dwmblocks
+                        dwmblocks &
+                        was_external=0
+                fi
+        else
+                was_external=1
+        fi
+done

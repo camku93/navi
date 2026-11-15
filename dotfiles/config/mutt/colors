@@ -1,0 +1,20 @@
+# Navi neomutt colors. These use the terminal's own palette (st),
+# so they follow the same pink / white / dark scheme as the rest of the desktop.
+color normal      default  default
+color indicator   color7   color5
+color status      color7   color5
+color tree        color5   default
+color tilde       color8   default
+color markers     color8   default
+color message     color7   default
+color error       color1   default
+color signature   color8   default
+color attachment  color6   default
+color search      color0   color3
+color hdrdefault  color8   default
+color header      color5   default  "^(From|Subject|Date|To):"
+color index       color5   default  "~N"
+color index       color5   default  "~F"
+color quoted      color8   default
+color quoted1     color4   default
+color body        color4   default  "[a-z]+://[^ <>\"]+"
