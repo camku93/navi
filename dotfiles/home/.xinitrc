@@ -15,6 +15,11 @@ feh --bg-fill ~/Pictures/Wallpapers/wallpaper.jpg &
 if [ ! -d /run/systemd/system ]; then
   if ! rc-update -U show 2>/dev/null | grep -q wireplumber; then
     pgrep -x pipewire >/dev/null || pipewire &
+    i=0
+    while [ ! -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pipewire-0" ] && [ "$i" -lt 50 ]; do
+      sleep 0.1
+      i=$((i + 1))
+    done
     pgrep -x wireplumber >/dev/null || wireplumber &
     pgrep -x pipewire-pulse >/dev/null || pipewire-pulse &
   fi
