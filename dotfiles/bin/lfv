@@ -1,5 +1,4 @@
 #!/bin/sh
-# based on lfimg https://github.com/thimc/lfimg
 FIFO_UEBERZUG="$(mktemp -u --suffix "ueberzug-$$")"
 mkfifo "$FIFO_UEBERZUG"
 ueberzug layer --parser json < "$FIFO_UEBERZUG" &

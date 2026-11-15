@@ -1,5 +1,4 @@
 #!/bin/sh
-# Inspired by lfimg: https://github.com/thimc/lfimg
 file="$1"
 w="$2"
 h="$3"
