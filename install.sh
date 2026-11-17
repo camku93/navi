@@ -12,6 +12,36 @@ say()  { printf '\n\033[1;35m==> %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m!! %s\033[0m\n' "$*" >&2; }
 die()  { printf '\033[1;31mxx %s\033[0m\n' "$*" >&2; exit 1; }
 
+banner() {
+        local p=$'\033[1;38;2;184;86;127m' w=$'\033[1;38;2;232;234;240m'
+        local s=$'\033[38;2;139;154;184m' r=$'\033[0m' a b
+        printf '\n'
+        while IFS='|' read -r a b; do
+                printf '  %s%s%s%s%s\n' "$p" "$a" "$w" "$b" "$r"
+        done <<'EOF'
+                      |                            ▗▄
+                      |                            ▐█
+███                   |██████    ▐████   █▌    █▌
+▀▀▀▄▄▄                |█▛▀▀▀▀▄▖  ▝▀▀▀▀▄▖ █▌    █▌ ▄▄▄
+   ███                |█▌    █▌       █▌ █▌    █▌ ███
+      ███             |█▌    █▌  ▐█████▌  ▐█ ▐█    ▐█
+   ▄▄▄▀▀▀             |█▌    █▌ ▄▞▀▀▀▀█▌  ▐█ ▐█    ▐█
+   ███                |█▌    █▌ █▌    █▌  ▐█ ▐█    ▐█
+███      █████████    |█▌    █▌  ▐█████▌    █▌    ████▌
+▀▀▀      ▀▀▀▀▀▀▀▀▀    |▀▘    ▀▘  ▝▀▀▀▀▀▘    ▀▘    ▀▀▀▀▘
+EOF
+        printf '\n  %sNimble Arch Visual Interface%s\n\n' "$s" "$r"
+}
+
+confirm() {
+        local ans=
+        printf 'Proceed with installation? [Y/n] '
+        read -r ans </dev/tty || ans=
+        case $ans in
+        [Nn]*) printf 'Installation cancelled.\n'; exit 0 ;;
+        esac
+}
+
 check_environment() {
 	[ "$(id -u)" -ne 0 ] || die "Run this as your normal user, not root."
 	command -v pacman >/dev/null 2>&1 || die "pacman not found. Navi needs an Arch-based system."
@@ -328,6 +358,8 @@ Navi is installed.
 MSG
 }
 
+banner
+confirm
 check_environment
 detect_init
 install_packages
