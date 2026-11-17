@@ -242,6 +242,11 @@ tmux set-option -t "$session" @ncmpcppv-art "$art"
 vis=
 have cava && vis=$(tmux split-window -v -P -F '#{pane_id}' -t "$art" -l 30% "sh -c 'while :; do cava; sleep 1; done'")
 tmux select-pane -t "$main"
+for p in "$art" $vis; do
+	tmux select-pane -d -t "$p"
+	tmux set-hook -t "$session" -a pane-mode-changed "if -F -t $p '#{pane_in_mode}' 'send-keys -t $p -X cancel'"
+done
+tmux set-hook -t "$session" after-select-pane "select-pane -t $main"
 
 NCMPCPPV_HOOK='' "$self" --song-change &
 

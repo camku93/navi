@@ -11,7 +11,7 @@ gradient_color_2 = '#b8567f'
 gradient_color_3 = '#e8eaf0'
 
 [input]
-method = pulse
-
-[input]
-method = pulse
+method = fifo
+source = /tmp/mpd-cava.fifo
+sample_rate = 44100
+sample_bits = 16
