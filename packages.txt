@@ -122,4 +122,4 @@ ntfs-3g
 dosfstools
 openssh
 yt-dlp
-
+soundfont-fluid
