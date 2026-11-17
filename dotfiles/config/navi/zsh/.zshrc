@@ -12,7 +12,7 @@ export PATH="$HOME/.local/bin:$PATH"
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias lf='lfv'
-ncmpcpp() { if [ $# -eq 0 ]; then ncmpcppplayer; else command ncmpcpp "$@"; fi; }
+ncmpcpp() { if [ $# -eq 0 ]; then ncmpcppv; else command ncmpcpp "$@"; fi; }
 
 # Prompt: [user@host cwd]$ in rose accent color
 PROMPT='%F{#b8567f}[%n@%m %1~]$%f '

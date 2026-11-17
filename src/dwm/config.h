@@ -126,7 +126,7 @@ static const Key keys[] = {
 	{ Mod4Mask,			XK_F11,    spawn,	   SHCMD("webcam-toggle") },
 	{ Mod4Mask|ShiftMask,		XK_F11,    spawn,	   SHCMD("webcam-toggle tile") },
 	{ Mod4Mask,			XK_e,      spawn,          SHCMD("st -e neomutt") },
-	{ Mod4Mask,                     XK_m,      spawn,          SHCMD("st -e ncmpcppplayer") },
+	{ Mod4Mask,                     XK_m,      spawn,          SHCMD("st -e ncmpcppv") },
 	{ Mod4Mask,			XK_c,	   spawn,          SHCMD("st -e nvim") },
 	{ Mod4Mask,			XK_i,	   spawn,	   SHCMD("librewolf") },
 	{ Mod4Mask, 			XK_f,      spawn,          SHCMD("st -e lfv") },

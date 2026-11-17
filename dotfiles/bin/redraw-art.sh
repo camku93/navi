@@ -34,7 +34,7 @@ fi
 cache="$(cat /tmp/mpd-cache-path.txt 2>/dev/null)"
 [ -p "$FIFO_UEBERZUG" ] || exit
 
-pane="$(tmux list-panes -t ncmpcppplayer -F '#{pane_index} #{pane_id} #{pane_left} #{pane_top} #{pane_width} #{pane_height}' 2>/dev/null | awk '$1==1')"
+pane="$(tmux list-panes -t ncmpcppv -F '#{pane_index} #{pane_id} #{pane_left} #{pane_top} #{pane_width} #{pane_height}' 2>/dev/null | awk '$1==1')"
 [ -z "$pane" ] && exit
 read -r _ id art_x art_y art_width art_height <<< "$pane"
 state="$(tmux display-message -p -t "$id" '#{@art}')"
