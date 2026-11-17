@@ -253,14 +253,24 @@ NCMPCPPV_HOOK='' "$self" --song-change &
 (
 	last='' size=''
 	while tmux has-session -t "$session" 2>/dev/null; do
-		win=$(tmux display-message -p -t "$main" '#{window_width}x#{window_height}' 2>/dev/null)
+		win=$(tmux display-message -p -t "$main" '#{window_width} #{window_height} #{client_cell_width} #{client_cell_height}' 2>/dev/null)
 		if [ -n "$win" ] && [ "$win" != "$size" ]; then
 			size=$win
-			w=$(( ${win%x*} * 28 / 100 ))
-			[ "$w" -gt $(( ${win%x*} - 31 )) ] && w=$(( ${win%x*} - 31 ))
+			read -r ww wh cw ch <<< "$win"
+			w=$(( ww * 28 / 100 ))
+			[ "$w" -gt $(( ww - 31 )) ] && w=$(( ww - 31 ))
 			[ "$w" -lt 1 ] && w=1
 			tmux resize-pane -t "$art" -x "$w" 2>/dev/null
-			[ -n "$vis" ] && tmux resize-pane -t "$vis" -y 30% 2>/dev/null
+			if [ -n "$vis" ]; then
+				if [ "${cw:-0}" -gt 0 ] && [ "${ch:-0}" -gt 0 ]; then
+					h=$(( (w * cw + ch - 1) / ch ))
+				else
+					h=$(( (w + 1) / 2 ))
+				fi
+				[ "$h" -gt $(( wh - 5 )) ] && h=$(( wh - 5 ))
+				[ "$h" -lt 3 ] && h=3
+				tmux resize-pane -t "$art" -y "$h" 2>/dev/null
+			fi
 		fi
 		geo=$(tmux display-message -p -t "$art" '#{pane_width}x#{pane_height}+#{pane_left}+#{pane_top}' 2>/dev/null)
 		if [ -n "$geo" ] && [ "$geo" != "$last" ]; then
