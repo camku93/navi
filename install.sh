@@ -351,7 +351,6 @@ finish() {
 
 Navi is installed.
   - Old versions of any files it replaced are in: $BACKUP
-  - Log out, then log in on the first console (tty1) and the desktop starts by itself. With a display manager, pick Navi from its session menu.
   - Press Super+F1 for the keybinds.
   - Mail is installed but not set up. When you want it:  mw -a you@example.com
   - Run nvim once so NvChad can finish setting itself up.
