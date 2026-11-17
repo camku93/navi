@@ -92,7 +92,7 @@ install_packages() {
 	local avail=() p
 	while read -r p; do
 		case $p in ''|'#'*) continue ;; esac
-# Skip anything the system already provides (pipewire-pulse provides pulseaudio, for example)
+# Skip anything the system already provides
 	[ -z "$(pacman -T "$p")" ] && continue
 		if pacman -Si "$p" >/dev/null 2>&1; then
 			avail+=("$p")
@@ -101,7 +101,6 @@ install_packages() {
 		fi
 	done < "$NAVI_DIR/packages.txt"
 
-	# Init-system service packages (Artix and Parabola name them <pkg>-openrc / <pkg>-runit)
 	case $INIT in
 	openrc|runit)
 		for p in networkmanager cups chrony elogind; do
@@ -168,7 +167,7 @@ install_nvchad() {
 		|| warn "Could not download NvChad."
 }
 
-# other_desktop_present: true if any desktop besides Navi has a login session entry.
+# other_desktop_present
 other_desktop_present() {
         local f
         for f in /usr/share/xsessions/*.desktop /usr/share/wayland-sessions/*.desktop; do
@@ -179,8 +178,7 @@ other_desktop_present() {
         return 1
 }
 
-# copy_tree SRC DST BACKUP: copy every file under SRC into DST, saving any
-# different file it would overwrite into BACKUP first.
+# copy_tree SRC DST BACKUP: copy every file under SRC into DST
 copy_tree() {
 	local src=$1 dst=$2 bak=$3 skip=${4:-no-skip} f
 	while IFS= read -r -d '' f; do
@@ -248,7 +246,6 @@ install_system_files() {
 		sudo mkfontdir /usr/share/fonts/misc
 	fi
 
-	# Let the power menu reboot and power off without a password prompt
 	local tmp rb po
 	rb=$(command -v reboot); po=$(command -v poweroff)
 	if [ -n "$rb" ] && [ -n "$po" ]; then
@@ -262,7 +259,7 @@ install_system_files() {
 		rm -f "$tmp"
 	fi
 
-	# Session entry for display managers 
+	# Session entry
 	tmp=$(mktemp)
 	printf '[Desktop Entry]\nName=Navi\nComment=Navi dwm session\nExec=%s/.xinitrc\nType=Application\n' "$HOME" > "$tmp"
 	sudo install -Dm644 "$tmp" /usr/share/xsessions/navi.desktop
