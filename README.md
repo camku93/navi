@@ -6,7 +6,7 @@ Website: [navi-desktop.org](https://navi-desktop.org)
 
 ## What is Navi?
 
-Navi is for people who already know tiling window managers and for people who are new to them. Everything comes pre-configured, so you don't have to spend hours setting up a new system. Because the setup is in plain files that you can read, Navi makes it easy to learn how a desktop like this works, and how to modify it.
+Navi is for people who already use tiling window managers and for people who are new to them. Everything comes pre-configured, so you don't have to spend hours setting up a new system. Because the setup is in plain files that you can read, Navi makes it easy to learn how a desktop like this works, and how to modify it.
 
 ## Installation
 
