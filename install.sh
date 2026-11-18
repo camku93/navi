@@ -30,7 +30,7 @@ banner() {
 ███      █████████    |█▌    █▌  ▐█████▌    █▌    ████▌
 ▀▀▀      ▀▀▀▀▀▀▀▀▀    |▀▘    ▀▘  ▝▀▀▀▀▀▘    ▀▘    ▀▀▀▀▘
 EOF
-        printf '\n  %sNimble Arch Visual Interface%s\n\n' "$s" "$r"
+        printf '%24s%sNimble Arch Visual Interface%s\n\n' '' "$s" "$r"
 }
 
 confirm() {
