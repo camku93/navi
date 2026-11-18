@@ -25,6 +25,7 @@ if [ ! -d /run/systemd/system ]; then
   fi
 fi
 pgrep -x mpd >/dev/null || mpd
+[ -f "$HOME/.Xresources" ] && xrdb -merge "$HOME/.Xresources"
 agents=$(systemctl --user list-units --state=active --plain --no-legend 'gpg-agent*' 2>/dev/null | awk '{print $1}')
 [ -n "$agents" ] && systemctl --user stop $agents
 gpgconf --kill gpg-agent
