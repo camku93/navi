@@ -58,3 +58,13 @@ element-text {
 element-icon {
         background-color: inherit;
 }
+
+error-message {
+        background-color: transparent;
+        padding: 4px;
+}
+
+textbox {
+        background-color: transparent;
+        text-color: #e8eaf0;
+}
