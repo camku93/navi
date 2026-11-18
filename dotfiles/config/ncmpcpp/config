@@ -21,3 +21,5 @@ visualizer_type = "spectrum"
 visualizer_color = 60, 96, 96, 132, 132, 175, 182, 255
 
 lyrics_fetchers = tags, genius, tekstowo, plyrics, justsomelyrics, jahlyrics, zeneszoveg
+
+window_border_color = magenta
