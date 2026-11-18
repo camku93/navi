@@ -25,8 +25,14 @@ if [ ! -d /run/systemd/system ]; then
   fi
 fi
 pgrep -x mpd >/dev/null || mpd
+agents=$(systemctl --user list-units --state=active --plain --no-legend 'gpg-agent*' 2>/dev/null | awk '{print $1}')
+[ -n "$agents" ] && systemctl --user stop $agents
+gpgconf --kill gpg-agent
+gpg-agent --daemon --default-cache-ttl 34560000 --max-cache-ttl 34560000 >/dev/null 2>&1
 mbsync-loop &
 xset dpms 0 0 900
 xset +fp /usr/share/fonts/misc
 xset fp rehash
-exec dwm
+dwm
+gpgconf --kill gpg-agent
+[ -n "$agents" ] && systemctl --user start $agents

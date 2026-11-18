@@ -14,7 +14,7 @@ has_account() {
 case $BLOCK_BUTTON in
 	1)
 		if has_account; then
-			setsid -w -f "$TERMINAL" -e neomutt
+                        setsid -w -f "$TERMINAL" -e sh -c 'export GPG_TTY=$(tty); mbsync -a; exec neomutt'
 		else
 			setsid -w -f "$TERMINAL" -e sh -c '
 				echo "No mail account yet."
