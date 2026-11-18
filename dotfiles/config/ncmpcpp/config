@@ -19,3 +19,5 @@ visualizer_output_name = "Visualizer feed"
 visualizer_in_stereo = "yes"
 visualizer_type = "spectrum"
 visualizer_color = 60, 96, 96, 132, 132, 175, 182, 255
+
+lyrics_fetchers = tags, genius, tekstowo, plyrics, justsomelyrics, jahlyrics, zeneszoveg
