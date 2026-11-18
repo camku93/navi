@@ -137,6 +137,8 @@ static const Key keys[] = {
 	{ Mod4Mask,			XK_r,	   spawn,	   SHCMD("st -e newsboat") },
 	{ Mod4Mask,			XK_p,	   spawn,	   SHCMD("rofi -show drun -theme ~/.config/rofi/launcher.rasi") },
 	{ Mod4Mask|ShiftMask,		XK_p,	   spawn,	   SHCMD("system-config-printer") },
+        { Mod4Mask,                     XK_Return, spawn,          {.v = termcmd } },
+        { Mod4Mask|ShiftMask,           XK_Return, togglescratch,  {0} },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)

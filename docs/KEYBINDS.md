@@ -47,8 +47,8 @@
 
 | Key | Action |
 | --- | --- |
-| Alt+Return | Open terminal |
-| Alt+Shift+Return | Master terminal: show / hide a floating terminal |
+| Alt+Return or Super+Return | Open terminal |
+| Alt+Shift+Return or Super+Shift+Return | Master terminal: show / hide a floating terminal |
 
 ## Apps
 
