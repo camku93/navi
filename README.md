@@ -1,6 +1,6 @@
 # Nimble Arch Visual Interface (Navi)
 
-Navi is my build of dwm, inspired by Luke Smith's LARBS. It is a keyboard-driven desktop built on suckless tools designed to run on Arch linux-based systems.
+Navi is my build of dwm, inspired by Luke Smith's LARBS. It is a keyboard-driven desktop built on suckless tools designed to run on Arch Linux-based systems.
 
 Website: [navi-desktop.org](https://navi-desktop.org)
 
