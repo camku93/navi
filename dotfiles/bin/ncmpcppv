@@ -20,7 +20,7 @@ pane_loop() {
 draw_note() {
 	local rows cols top left i=0 line
 	rows=$(tput lines) cols=$(tput cols)
-	top=$(( (rows - 8) / 2 )) left=$(( (cols - 16) / 2 ))
+	top=$(( (rows - 8) / 2 )) left=$(( (cols - 18) / 2 ))
 	[ "$top" -lt 0 ] && top=0
 	[ "$left" -lt 0 ] && left=0
 	printf '\033[2J\033[38;2;184;86;127m'
@@ -28,14 +28,14 @@ draw_note() {
 		printf '\033[%d;%dH%s' $((top + i + 1)) $((left + 1)) "$line"
 		i=$((i + 1))
 	done <<'EOF'
-     ▄▄▄▄▄▄▄▄▄▄▄
-     █▀▀▀▀▀▀▀▀▀█
-     █         █
-     █         █
-     █         █
- ▄▄▄▄█     ▄▄▄▄█
-█████▌    █████▌
- ▀▀▀▀      ▀▀▀▀
+      ▄▄▄▄▄███████
+      █▀▀▀▀▀▀    █
+      █          █
+      █          █
+      █          █
+  ▗▄▄▄█      ▗▄▄▄█
+▄██████    ▄██████
+▜███▛▀     ▜███▛▀
 EOF
 	printf '\033[0m'
 }
