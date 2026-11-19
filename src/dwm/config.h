@@ -57,7 +57,7 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -93,7 +93,8 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY|ShiftMask,		XK_f,	   togglefullscr,  {0} },
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+	{ MODKEY|ShiftMask,             XK_m,      setlayout,      {.v = &layouts[2]} },
+	{ MODKEY|ShiftMask,             XK_t,      setlayout,      {.v = &layouts[3]} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
@@ -113,7 +114,7 @@ static const Key keys[] = {
 	{ 0, XF86XK_AudioPlay, spawn, SHCMD("mpc toggle") },
 	{ 0, XF86XK_AudioNext, spawn, SHCMD("mpc next") },
 	{ 0, XF86XK_AudioPrev, spawn, SHCMD("mpc prev") },
-	{ Mod4Mask, XK_l, spawn, SHCMD("slock") },
+	{ Mod4Mask,			XK_Escape, spawn,	   SHCMD("slock") },
         { Mod4Mask,			XK_F2,     spawn,          SHCMD("dotfiles-menu") },
 	{ Mod4Mask, 			XK_F1,     spawn, 	   SHCMD("zathura ~/Documents/Navi-Keybinds.pdf") },	
 	{ Mod4Mask,			XK_F3,	   spawn,          SHCMD("file-search") },
@@ -128,17 +129,14 @@ static const Key keys[] = {
 	{ Mod4Mask,			XK_e,      spawn,          SHCMD("st -e neomutt") },
 	{ Mod4Mask,                     XK_m,      spawn,          SHCMD("st -e ncmpcppv") },
 	{ Mod4Mask,			XK_c,	   spawn,          SHCMD("st -e nvim") },
-	{ Mod4Mask,			XK_i,	   spawn,	   SHCMD("librewolf") },
-	{ Mod4Mask, 			XK_f,      spawn,          SHCMD("st -e lfv") },
+	{ Mod4Mask,			XK_w,	   spawn,	   SHCMD("librewolf") },
+	{ Mod4Mask, 			XK_r,      spawn,          SHCMD("st -e lfv") },
 	{ Mod4Mask,			XK_s,	   spawn,	   SHCMD("st -e htop") },
 	{ Mod4Mask,			XK_a, 	   spawn,	   SHCMD("st -e qalc") },
 	{ Mod4Mask,			XK_u,	   spawn,	   SHCMD("st -e navi-update") },
 	{ Mod4Mask,			XK_n,	   spawn,          SHCMD("st -e nmtui") },
-	{ Mod4Mask,			XK_r,	   spawn,	   SHCMD("st -e newsboat") },
-	{ Mod4Mask,			XK_p,	   spawn,	   SHCMD("rofi -show drun -theme ~/.config/rofi/launcher.rasi") },
+	{ Mod4Mask|ShiftMask,		XK_n,	   spawn,	   SHCMD("st -e newsboat") },
 	{ Mod4Mask|ShiftMask,		XK_p,	   spawn,	   SHCMD("system-config-printer") },
-        { Mod4Mask,                     XK_Return, spawn,          {.v = termcmd } },
-        { Mod4Mask|ShiftMask,           XK_Return, togglescratch,  {0} },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
@@ -148,7 +146,7 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
-   { Mod4Mask|ShiftMask,           XK_backslash, togglebarpos,   {0} },
+	{ MODKEY|ShiftMask,             XK_b,      togglebarpos,   {0} },
 	{ MODKEY|ShiftMask,             XK_q,      spawn,          SHCMD("confirm-logout") },
 };
 
