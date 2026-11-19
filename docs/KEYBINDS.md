@@ -4,67 +4,68 @@
 
 | Key | Action |
 | --- | --- |
-| Alt+j / Alt+k | Focus next / previous window |
-| Alt+Tab | Focus next window |
-| Alt+z | Zoom (swap focused window into master) |
-| Alt+Shift+c | Close focused window |
-| Alt+Shift+space | Toggle floating for focused window |
-| Alt+Shift+f | Toggle fullscreen for focused window |
-| Alt+i / Alt+d | More / fewer windows in master area |
-| Alt+h / Alt+l | Shrink / grow master area |
+| Super+j / Super+k | Focus next / previous window |
+| Super+Tab | Focus next window |
+| Super+z | Zoom (swap focused window into master) |
+| Super+Shift+c | Close focused window |
+| Super+Shift+space | Toggle floating for focused window |
+| Super+Shift+f | Toggle fullscreen for focused window |
+| Super+i / Super+d | More / fewer windows in master area |
+| Super+h / Super+l | Shrink / grow master area |
 
 ## Layouts and bar
 
 | Key | Action |
 | --- | --- |
-| Alt+t | Tile layout |
-| Alt+f | Floating layout |
-| Alt+m | Monocle layout |
-| Alt+space | Toggle previous layout |
-| Alt+b | Toggle bar visibility |
-| Super+Shift+\ | Switch statusbar position |
+| Super+t | Tile layout |
+| Super+Shift+t | Centered master layout |
+| Super+f | Floating layout |
+| Super+Shift+m | Monocle layout |
+| Super+space | Toggle previous layout |
+| Super+b | Toggle bar visibility |
+| Super+Shift+b | Switch statusbar position |
 
 ## Tags (workspaces)
 
 | Key | Action |
 | --- | --- |
-| Alt+1 through Alt+9 | View tag N |
-| Alt+Ctrl+1-9 | Toggle view of tag N |
-| Alt+Shift+1-9 | Send window to tag N |
-| Alt+Ctrl+Shift+1-9 | Toggle window on tag N |
-| Alt+0 | View all tags |
-| Alt+Shift+0 | Send window to all tags |
+| Super+1 through Super+9 | View tag N |
+| Super+Ctrl+1-9 | Toggle view of tag N |
+| Super+Shift+1-9 | Send window to tag N |
+| Super+Ctrl+Shift+1-9 | Toggle window on tag N |
+| Super+0 | View all tags |
+| Super+Shift+0 | Send window to all tags |
 
 ## Monitors
 
 | Key | Action |
 | --- | --- |
-| Alt+comma / Alt+period | Focus previous / next monitor |
-| Alt+Shift+comma / Alt+Shift+period | Send window to previous / next monitor |
+| Super+comma / Super+period | Focus previous / next monitor |
+| Super+Shift+comma / Super+Shift+period | Send window to previous / next monitor |
 | Super+F4 | Display switch (laptop / external / extend / mirror) |
 
 ## Terminals
 
 | Key | Action |
 | --- | --- |
-| Alt+Return or Super+Return | Open terminal |
-| Alt+Shift+Return or Super+Shift+Return | Master terminal: show / hide a floating terminal |
+| Super+Return | Open terminal |
+| Super+Shift+Return | Master terminal: show / hide a floating terminal |
 
 ## Apps
 
 | Key | Action |
 | --- | --- |
-| Alt+p or Super+p | Run menu |
+| Super+p | Run menu |
 | Super+e | Email (Mutt-Wizard) |
-| Super+m | Music Player (ncmpcpp) |
+| Super+m | Music player (ncmpcppv) |
 | Super+c | Neovim (NvChad) |
-| Super+i | Librewolf |
-| Super+f | lf (file manager) |
+| Super+w | Librewolf |
+| Super+r | lfv (file manager) |
 | Super+s | htop |
 | Super+n | nmtui (network) |
-| Super+r | RSS reader (newsboat) |
+| Super+Shift+n | RSS reader (newsboat) |
 | Super+a | Calculator (qalc) |
-| Super+u | Update system (navi-update) |
+| Super+u | Update system (sys-update) |
 | Super+Shift+p | Printer settings (system-config-printer) |
 
 ## Tools and files
@@ -88,8 +89,8 @@
 
 | Key | Action |
 | --- | --- |
-| Super+l | Lock screen |
-| Alt+Shift+q | Quit dwm |
+| Super+Escape | Lock screen |
+| Super+Shift+q | Log out (asks first) |
 
 ## Copy and paste
 
