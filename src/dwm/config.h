@@ -149,7 +149,7 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
    { Mod4Mask|ShiftMask,           XK_backslash, togglebarpos,   {0} },
-	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+	{ MODKEY|ShiftMask,             XK_q,      spawn,          SHCMD("confirm-logout") },
 };
 
 /* button definitions */
