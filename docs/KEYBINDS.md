@@ -127,3 +127,10 @@
 | --- | --- |
 | Alt+s | Decrease transparency |
 | Alt+a | Increase transparency |
+
+## Wallpaper
+
+| Key | Action |
+| --- | --- |
+| b (in lf) | Set the image under the cursor as your wallpaper |
+| setbg image.jpg | Set a wallpaper from the terminal |

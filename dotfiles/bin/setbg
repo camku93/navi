@@ -1,0 +1,25 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+bg="${XDG_DATA_HOME:-$HOME/.local/share}/bg"
+default="$HOME/Pictures/Wallpapers/wallpaper.jpg"
+
+if [ -n "$1" ]; then
+	[ -f "$1" ] || { echo "setbg: $1 is not a file" >&2; exit 1; }
+	mkdir -p "${bg%/*}"
+	cp -f "$1" "$bg"
+elif [ ! -e "$bg" ] && [ -f "$default" ]; then
+	mkdir -p "${bg%/*}"
+	cp -f "$default" "$bg"
+fi
+
+[ -e "$bg" ] || exit 0
+
+if command -v xwallpaper >/dev/null 2>&1; then
+	xwallpaper --zoom "$bg"
+elif command -v feh >/dev/null 2>&1; then
+	feh --no-fehbg --bg-fill "$bg"
+else
+	echo "setbg: install xwallpaper or feh" >&2
+	exit 1
+fi

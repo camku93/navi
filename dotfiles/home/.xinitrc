@@ -11,7 +11,7 @@ fi
 picom &
 dunst &
 display-autorevert &
-feh --bg-fill ~/Pictures/Wallpapers/wallpaper.jpg &
+setbg &
 if [ ! -d /run/systemd/system ]; then
   if ! rc-update -U show 2>/dev/null | grep -q wireplumber; then
     pgrep -x pipewire >/dev/null || pipewire &
