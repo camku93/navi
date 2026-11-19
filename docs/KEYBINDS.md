@@ -132,5 +132,5 @@
 
 | Key | Action |
 | --- | --- |
-| b (in lf) | Set the image under the cursor as your wallpaper |
+| b (in lf) | Set the selected image as your wallpaper |
 | setbg image.jpg | Set a wallpaper from the terminal |
