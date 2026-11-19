@@ -3,6 +3,7 @@ export TERMINAL=st
 export XDG_CURRENT_DESKTOP=navi
 export EDITOR=vim
 export PATH="$HOME/.local/bin:$PATH"
+export _JAVA_AWT_WM_NONREPARENTING=1
 if [ -f "$HOME/.config/navi/use-zsh" ] && command -v zsh >/dev/null 2>&1; then
         export SHELL=$(command -v zsh)
         export ZDOTDIR="$HOME/.config/navi/zsh"
