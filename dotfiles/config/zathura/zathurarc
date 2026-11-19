@@ -1,3 +1,9 @@
 set adjust-open width
 set highlight-color "rgba(184,86,127,0.5)"
 set highlight-active-color "rgba(255,79,195,0.5)"
+set default-bg "#1a1c24"
+set default-fg "#e8eaf0"
+set statusbar-bg "#1a1c24"
+set statusbar-fg "#e8eaf0"
+set inputbar-bg "#1a1c24"
+set inputbar-fg "#e8eaf0"
