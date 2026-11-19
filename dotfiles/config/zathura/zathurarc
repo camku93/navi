@@ -1,1 +1,3 @@
 set adjust-open width
+set highlight-color "rgba(184,86,127,0.5)"
+set highlight-active-color "rgba(255,79,195,0.5)"
