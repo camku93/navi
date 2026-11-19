@@ -21,8 +21,7 @@ icon_70=$(printf '\U000f0080')
 icon_80=$(printf '\U000f0081')
 icon_90=$(printf '\U000f0082')
 icon_alert=$(printf '\U000f10cd')
-icon_chg=$(printf '\U000f0084')
-icon_chg10=$(printf '\U000f0085')
+icon_chg10=$(printf '\U000f089c')
 icon_chg20=$(printf '\U000f0086')
 icon_chg30=$(printf '\U000f0087')
 icon_chg40=$(printf '\U000f0088')
@@ -53,7 +52,7 @@ icon_for_level() {
 
 icon_for_charging_level() {
 	c=$1
-	if [ "$c" -ge 90 ]; then echo "$icon_chg"
+	if [ "$c" -ge 90 ]; then echo "$icon_chg90"
 	elif [ "$c" -ge 80 ]; then echo "$icon_chg80"
 	elif [ "$c" -ge 70 ]; then echo "$icon_chg70"
 	elif [ "$c" -ge 60 ]; then echo "$icon_chg60"
