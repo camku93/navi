@@ -91,7 +91,7 @@
 | Key | Action |
 | --- | --- |
 | Super+Escape | Lock screen |
-| Super+Shift+q | Log out (asks first) |
+| Super+Shift+q | Log out |
 
 ## Copy and paste
 
