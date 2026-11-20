@@ -123,3 +123,4 @@ dosfstools
 openssh
 yt-dlp
 soundfont-fluid
+imlib2
