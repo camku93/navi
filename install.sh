@@ -336,6 +336,13 @@ install_aur() {
         command -v abook >/dev/null 2>&1 || MISSING+=(abook)
 }
 
+record_install() {
+        mkdir -p "$HOME/.config/navi"
+        printf '%s\n' "$NAVI_DIR" > "$HOME/.config/navi/repo"
+        git -C "$NAVI_DIR" rev-parse HEAD > "$HOME/.config/navi/version" 2>/dev/null \
+                || rm -f "$HOME/.config/navi/version"
+}
+
 finish() {
 	say "Done"
 	if [ "${#MISSING[@]}" -gt 0 ]; then
@@ -347,6 +354,7 @@ finish() {
 Navi is installed.
   - Old versions of any files it replaced are in: $BACKUP
   - Press Super+F1 for the keybinds.
+  - To update Navi later, press Super+Shift+U.
   - Mail is installed but not set up. When you want it:  mw -a you@example.com
   - Run nvim once so NvChad can finish setting itself up.
 MSG
@@ -367,4 +375,5 @@ install_dotfiles
 install_system_files
 set_shell
 setup_autostart
+record_install
 finish

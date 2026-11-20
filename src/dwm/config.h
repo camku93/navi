@@ -134,6 +134,7 @@ static const Key keys[] = {
 	{ Mod4Mask,			XK_s,	   spawn,	   SHCMD("st -e htop") },
 	{ Mod4Mask,			XK_a, 	   spawn,	   SHCMD("st -e qalc") },
 	{ Mod4Mask,			XK_u,	   spawn,	   SHCMD("st -e sys-update") },
+        { Mod4Mask|ShiftMask,           XK_u,      spawn,        SHCMD("st -e navi-update") },
 	{ Mod4Mask,			XK_n,	   spawn,          SHCMD("st -e nmtui") },
 	{ Mod4Mask|ShiftMask,		XK_n,	   spawn,	   SHCMD("st -e newsboat") },
 	{ Mod4Mask|ShiftMask,		XK_p,	   spawn,	   SHCMD("system-config-printer") },

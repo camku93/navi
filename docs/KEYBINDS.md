@@ -66,6 +66,7 @@
 | Super+Shift+n | RSS reader (newsboat) |
 | Super+a | Calculator (qalc) |
 | Super+u | Update system (sys-update) |
+| Super+Shift+u | Update Navi (navi-update) |
 | Super+Shift+p | Printer settings (system-config-printer) |
 
 ## Tools and files
