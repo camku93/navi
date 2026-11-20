@@ -1,25 +1,31 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-internal=$(xrandr --query | awk '/^(LVDS|eDP)[^ ]* connected/ {print $1; exit}')
+connected() { xrandr --query 2>/dev/null | awk '/ connected/ {print $1}'; }
 
-was_external=0
-[ -z "$internal" ] && exit 0
+prev=$(connected)
+while sleep 2; do
+	now=$(connected)
+	[ "$now" = "$prev" ] && continue
+	lost=0
+	for o in $prev; do
+		printf '%s\n' "$now" | grep -qx "$o" || lost=1
+	done
+	prev=$now
+	[ "$lost" -eq 1 ] || continue
 
-while true; do
-        sleep 2
-        connected_externals=$(xrandr --query 2>/dev/null \
-                | grep " connected" \
-                | grep -v "^${internal}")
-
-        if [ -z "$connected_externals" ]; then
-                if [ "$was_external" = "1" ]; then
-                        xrandr --auto 2>/dev/null
-			[ -f "$HOME/.fehbg" ] && sh "$HOME/.fehbg" 2>/dev/null
-                        pkill dwmblocks
-                        dwmblocks &
-                        was_external=0
-                fi
-        else
-                was_external=1
-        fi
+	q=$(xrandr --query 2>/dev/null)
+	set --
+	for o in $(printf '%s\n' "$q" | awk '/ disconnected [0-9]+x[0-9]+\+/ {print $1}'); do
+		set -- "$@" --output "$o" --off
+	done
+	if ! printf '%s\n' "$q" | grep -Eq ' connected (primary )?[0-9]+x[0-9]+\+'; then
+		o=$(printf '%s\n' "$now" | sed -n 1p)
+		[ -n "$o" ] && set -- "$@" --output "$o" --auto --primary
+	fi
+	[ $# -gt 0 ] || continue
+	xrandr "$@"
+	setbg
+	pkill -x dwmblocks
+	setsid -f dwmblocks >/dev/null 2>&1
 done

@@ -1,53 +1,67 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-internal=$(xrandr --query | awk '/^(LVDS|eDP)[^ ]* connected/ {print $1; exit}')
+outs=$(xrandr --query | awk '/ connected/ {print $1}')
+count=$(printf '%s\n' "$outs" | grep -c .)
 
-refresh_ui() {
-        [ -f "$HOME/.fehbg" ] && sh "$HOME/.fehbg"
-	pkill dwmblocks
-	dwmblocks &
-}
-
-[ -z "$internal" ] && { notify-send "Display switch" "No laptop screen found."; exit 1; }
-
-external=$(xrandr --query \
-	| grep " connected" \
-	| grep -v "^${internal}" \
-	| cut -d' ' -f1)
-
-if [ -z "$external" ]; then
-	notify-send "Display switch" "No external display detected."
-	exit 1
+if [ "$count" -lt 2 ]; then
+	notify-send "Display switch" "Only one display is connected."
+	exit 0
 fi
 
-choice=$(printf '%s\n' \
-	"Laptop only" \
-	"External only" \
-	"Extend" \
-	"Mirror" \
-	| rofi -dmenu -i -p "Display" \
-	-theme ~/.config/rofi/menu.rasi)
-[ -z "$choice" ] && exit
+first=$(printf '%s\n' "$outs" | sed -n 1p)
+second=$(printf '%s\n' "$outs" | sed -n 2p)
 
-case "$choice" in
-	"Laptop only")
-		xrandr --output "$internal" --auto \
-			--output "$external" --off
-		;;
-	"External only")
-		xrandr --output "$external" --auto \
-			--output "$internal" --off
-		;;
-	"Extend")
-		xrandr --output "$internal" --auto \
-			--output "$external" --auto \
-			--right-of "$internal"
-		;;
-	"Mirror")
-		xrandr --output "$internal" --auto \
-			--output "$external" --auto \
-			--same-as "$internal"
-		;;
+choice=$({
+	for o in $outs; do
+		printf 'Only %s\n' "$o"
+	done
+	if [ "$count" -eq 2 ]; then
+		printf 'Extend: %s left, %s right\n' "$first" "$second"
+		printf 'Extend: %s left, %s right\n' "$second" "$first"
+	else
+		printf 'Extend all\n'
+	fi
+	printf 'Mirror\n'
+} | rofi -dmenu -i -p "Display" -theme ~/.config/rofi/menu.rasi)
+[ -z "$choice" ] && exit 0
+
+set --
+case $choice in
+"Only "*)
+	target=${choice#Only }
+	set -- --output "$target" --auto --primary
+	for o in $outs; do
+		[ "$o" = "$target" ] || set -- "$@" --output "$o" --off
+	done ;;
+"Extend: "*)
+	left=${choice#Extend: }
+	left=${left%% left,*}
+	right=${choice##*left, }
+	right=${right% right}
+	set -- --output "$left" --auto --primary --pos 0x0 --output "$right" --auto --right-of "$left" ;;
+"Extend all")
+	prev=
+	for o in $outs; do
+		if [ -z "$prev" ]; then
+			set -- "$@" --output "$o" --auto --primary --pos 0x0
+		else
+			set -- "$@" --output "$o" --auto --right-of "$prev"
+		fi
+		prev=$o
+	done ;;
+Mirror)
+	set -- --output "$first" --auto --primary
+	for o in $outs; do
+		[ "$o" = "$first" ] || set -- "$@" --output "$o" --auto --same-as "$first"
+	done ;;
+*) exit 0 ;;
 esac
 
-refresh_ui
+if ! xrandr "$@"; then
+	notify-send "Display switch" "That layout didn't work."
+	exit 1
+fi
+setbg
+pkill -x dwmblocks
+setsid -f dwmblocks >/dev/null 2>&1

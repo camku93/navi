@@ -42,7 +42,7 @@
 | --- | --- |
 | Super+comma / Super+period | Focus previous / next monitor |
 | Super+Shift+comma / Super+Shift+period | Send window to previous / next monitor |
-| Super+F4 | Display switch (laptop / external / extend / mirror) |
+| Super+F4 | Display switch (one screen / extend / mirror) |
 
 ## Terminals
 
