@@ -19,6 +19,18 @@ fi
 
 dir="$HOME/navi"
 
+if [ -d "$dir/.git" ] && [ -e "$HOME/.config/navi/repo" ]; then
+	echo "Navi is already installed."
+	echo "To update it, press Super+Shift+U or run navi-update."
+	echo "Reinstalling replaces your configs with Navi's (your old ones are backed up)."
+	printf 'Reinstall anyway? [y/N] '
+	read -r ans </dev/tty || ans=
+	case $ans in
+	[Yy]*) ;;
+	*) exit 0 ;;
+	esac
+fi
+
 if [ -d "$dir/.git" ]; then
 	echo "Updating $dir..."
 	git -C "$dir" pull
