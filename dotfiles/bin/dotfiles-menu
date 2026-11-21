@@ -16,9 +16,10 @@ declare -A configs=(
 	["Menus: launcher"]="$HOME/.config/rofi/launcher.rasi"
 	["Menus: menu"]="$HOME/.config/rofi/menu.rasi"
 	["Menus: power menu"]="$HOME/.config/rofi/power-menu.rasi"
+	["Menus: rofi settings"]="$HOME/.config/rofi/config.rasi"
 	["Shell: zshrc"]="$HOME/.config/navi/zsh/.zshrc"
-        ["Shell: tmux"]="$HOME/.config/tmux/tmux.conf"
-        ["Editor: vimrc"]="$HOME/.config/vim/vimrc"
+	["Shell: tmux"]="$HOME/.config/tmux/tmux.conf"
+	["Editor: vimrc"]="$HOME/.config/vim/vimrc"
 	["Editor: NvChad mappings"]="$HOME/.config/nvim/lua/mappings.lua"
 	["Bar: battery"]="$HOME/.local/bin/sb-battery"
 	["Bar: cpu"]="$HOME/.local/bin/sb-cpu"
@@ -33,6 +34,7 @@ declare -A configs=(
 	["Mail: neomutt colors"]="$HOME/.config/mutt/colors"
 	["Files: lf"]="$HOME/.config/lf/lfrc"
 	["Files: lf colors"]="$HOME/.config/lf/colors"
+	["Files: PDF reader (zathura)"]="$HOME/.config/zathura/zathurarc"
 	["Files: file search"]="$HOME/.local/bin/file-search"
 	["Files: usb mount"]="$HOME/.local/bin/usb-mount"
 	["Files: usb unmount"]="$HOME/.local/bin/usb-unmount"
@@ -49,4 +51,4 @@ choice=$(printf '%s\n' "${!configs[@]}" | sort \
 [ -z "$choice" ] && exit
 
 file="${configs[$choice]}"
-setsid -f st -e vim "$file"
+setsid -f "${TERMINAL:-st}" -e "${EDITOR:-vim}" "$file"

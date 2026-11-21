@@ -8,4 +8,5 @@ tlp-openrc
 texlive
 # pandoc: convert documents (docx, md, pdf)
 pandoc
+# libreoffice-fresh: office suite
 libreoffice-fresh

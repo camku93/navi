@@ -1,12 +1,12 @@
 #!/bin/bash
 
 case $BLOCK_BUTTON in
-        1)
-                power-menu
-                ;;
-        3)
-                notify-send "Power module" "Left click opens reboot/poweroff/logout/sleep menu"
-                ;;
+	1)
+		power-menu
+		;;
+	3)
+		notify-send "Power module" "Left click opens reboot/poweroff/logout/sleep menu"
+		;;
 esac
 
 . ~/.local/bin/bar-colors.sh

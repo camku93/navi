@@ -2,7 +2,7 @@
 while true; do
 	if [ -f "$HOME/.mbsyncrc" ] || [ -f "$HOME/.config/isyncrc" ]; then
 		mbsync -a >/dev/null 2>&1
-		pkill -RTMIN+12 "${STATUSBAR:-dwmblocks}"
+		pkill -RTMIN+12 dwmblocks
 	fi
 	sleep 120
 done

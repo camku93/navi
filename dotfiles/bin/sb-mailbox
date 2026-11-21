@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 . ~/.local/bin/bar-colors.sh
 
@@ -14,8 +14,10 @@ has_account() {
 case $BLOCK_BUTTON in
 	1)
 		if has_account; then
-                        setsid -w -f "$TERMINAL" -e sh -c 'export GPG_TTY=$(tty); mbsync -a; exec neomutt'
+			# shellcheck disable=SC2016
+			setsid -w -f "$TERMINAL" -e sh -c 'export GPG_TTY=$(tty); mbsync -a; exec neomutt'
 		else
+			# shellcheck disable=SC2016
 			setsid -w -f "$TERMINAL" -e sh -c '
 				echo "No mail account yet."
 				echo "Add one with:  mw -a you@example.com"
@@ -23,7 +25,7 @@ case $BLOCK_BUTTON in
 				echo
 				exec "${SHELL:-sh}"'
 		fi
-		pkill -RTMIN+12 "${STATUSBAR:-dwmblocks}"
+		pkill -RTMIN+12 dwmblocks
 		;;
 	3)
 		notify-send "Mail module" \

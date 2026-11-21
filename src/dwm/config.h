@@ -15,12 +15,10 @@ static const char *fonts[]          = {
 	"JetBrainsMono Nerd font Mono:size=11",
 	"NotoColorEmoji:pixelsize=10:antialias=true:autohint=true"
 };
-static const char dmenufont[]       = "DejaVuSansM Nerd font Mono:size=12";
 static const char col_gray1[]       = "#0d0d12";
 static const char col_gray2[]       = "#4d2735";
 static const char col_gray3[]       = "#e8eaf0";
 static const char col_gray4[]       = "#e8eaf0";
-static const char col_cyan[]        = "#ff4fc3";
 static const char col_accent[]      = "#b8567f";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
@@ -71,8 +69,6 @@ static const Layout layouts[] = {
 #define STATUSBAR "dwmblocks"
 
 /* commands */
-static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_accent, "-sf", col_gray3, NULL };
 static const char *termcmd[]  = { "st", NULL };
 
 static const char *scratchcmd[] = { "st", "-n", "masterterm", NULL };

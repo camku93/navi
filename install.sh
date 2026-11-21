@@ -3,6 +3,7 @@
 set -u
 
 NAVI_DIR=$(cd "$(dirname "$0")" && pwd)
+. "$NAVI_DIR/lib/navi-files.sh"
 STAMP=$(date +%Y%m%d-%H%M%S)
 BACKUP="$HOME/.navi-backup-$STAMP"
 MISSING=()
@@ -13,12 +14,12 @@ warn() { printf '\033[1;33m!! %s\033[0m\n' "$*" >&2; }
 die()  { printf '\033[1;31mxx %s\033[0m\n' "$*" >&2; exit 1; }
 
 banner() {
-        local p=$'\033[1;38;2;184;86;127m' w=$'\033[1;38;2;232;234;240m'
-        local s=$'\033[38;2;139;154;184m' r=$'\033[0m' a b
-        printf '\n'
-        while IFS='|' read -r a b; do
-                printf '  %s%s%s%s%s\n' "$p" "$a" "$w" "$b" "$r"
-        done <<'EOF'
+	local p=$'\033[1;38;2;184;86;127m' w=$'\033[1;38;2;232;234;240m'
+	local s=$'\033[38;2;139;154;184m' r=$'\033[0m' a b
+	printf '\n'
+	while IFS='|' read -r a b; do
+		printf '  %s%s%s%s%s\n' "$p" "$a" "$w" "$b" "$r"
+	done <<'EOF'
                     |                                     ▐▌
                     |
 ▀▙▄                 | ▐▙▞▀▀▚▄    ▄▀▀▀▀▀▚▖   █      ▐▌   ▀▀▜▌
@@ -28,16 +29,16 @@ banner() {
 ▄▛▀                 | ▐▌    █    ▝▚▄▄▄▞▜▌      ▝█▘     ▄▄▄▟▙▄▄▄
            ▀▀▀▀▀▀▀▀ |
 EOF
-        printf '%23s%sNimble Arch Visual Interface%s\n\n' '' "$s" "$r"
+	printf '%23s%sNimble Arch Visual Interface%s\n\n' '' "$s" "$r"
 }
 
 confirm() {
-        local ans=
-        printf 'Proceed with installation? [Y/n] '
-        read -r ans </dev/tty || ans=
-        case $ans in
-        [Nn]*) printf 'Installation cancelled.\n'; exit 0 ;;
-        esac
+	local ans=
+	printf 'Proceed with installation? [Y/n] '
+	read -r ans </dev/tty || ans=
+	case $ans in
+	[Nn]*) printf 'Installation cancelled.\n'; exit 0 ;;
+	esac
 }
 
 check_environment() {
@@ -90,8 +91,7 @@ install_packages() {
 	local avail=() p
 	while read -r p; do
 		case $p in ''|'#'*) continue ;; esac
-# Skip anything the system already provides
-	[ -z "$(pacman -T "$p")" ] && continue
+		[ -z "$(pacman -T "$p")" ] && continue
 		if pacman -Si "$p" >/dev/null 2>&1; then
 			avail+=("$p")
 		else
@@ -106,12 +106,12 @@ install_packages() {
 		done ;;
 	esac
 
-        if ! sudo pacman -S --needed --noconfirm "${avail[@]}"; then
-                warn "Batch install failed, trying packages one at a time."
-                for p in "${avail[@]}"; do
-                        sudo pacman -S --needed --noconfirm "$p" || MISSING+=("$p")
-                done
-        fi
+	if ! sudo pacman -S --needed --noconfirm "${avail[@]}"; then
+		warn "Batch install failed, trying packages one at a time."
+		for p in "${avail[@]}"; do
+			sudo pacman -S --needed --noconfirm "$p" || MISSING+=("$p")
+		done
+	fi
 }
 
 setup_services() {
@@ -160,77 +160,46 @@ install_mutt_wizard() {
 install_nvchad() {
 	[ -d "$HOME/.config/nvim" ] && return 0
 	say "Installing NvChad (it finishes setting itself up the first time you run nvim)"
-	git clone --depth 1 https://github.com/NvChad/starter "$HOME/.config/nvim" \
-		&& rm -rf "$HOME/.config/nvim/.git" \
-		|| warn "Could not download NvChad."
+	if git clone --depth 1 https://github.com/NvChad/starter "$HOME/.config/nvim"; then
+		rm -rf "$HOME/.config/nvim/.git"
+	else
+		warn "Could not download NvChad."
+	fi
 }
 
-# other_desktop_present
-other_desktop_present() {
-        local f
-        for f in /usr/share/xsessions/*.desktop /usr/share/wayland-sessions/*.desktop; do
-                [ -e "$f" ] || continue
-                [ "${f##*/}" = navi.desktop ] && continue
-                return 0
-        done
-        return 1
-}
-
-# copy_tree SRC DST BACKUP: copy every file under SRC into DST
-copy_tree() {
-	local src=$1 dst=$2 bak=$3 skip=${4:-no-skip} f
-	while IFS= read -r -d '' f; do
-                        case $f in $skip) continue ;; esac
-		if [ -e "$dst/$f" ] && ! cmp -s "$src/$f" "$dst/$f"; then
-			mkdir -p "$bak/$(dirname "$f")"
-			cp -a "$dst/$f" "$bak/$f"
-		fi
-		mkdir -p "$dst/$(dirname "$f")"
-		cp -p "$src/$f" "$dst/$f"
-	done < <(cd "$src" && find . -type f -print0)
+install_file() {
+	local src=$1 dst=$2 rel
+	if [ -e "$dst" ] && ! cmp -s "$src" "$dst"; then
+		rel=${dst#"$HOME"/}
+		mkdir -p "$BACKUP/$(dirname "$rel")"
+		cp -a "$dst" "$BACKUP/$rel"
+	fi
+	mkdir -p "$(dirname "$dst")"
+	cp -p "$src" "$dst"
 }
 
 install_dotfiles() {
 	say "Installing configs (existing files are saved in $BACKUP)"
-	mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/Documents" \
-		"$HOME/Pictures/Wallpapers" "$HOME/Music" "$HOME/.config/mpd/playlists"
+	mkdir -p "$HOME/Documents" "$HOME/Music" "$HOME/.config/mpd/playlists"
 	[ -e "$HOME/.config/mpd/state" ] || touch "$HOME/.config/mpd/state"
+	other_desktop_present && say "Another desktop is installed, so GTK theme settings are left alone"
 
-        local skip='no-skip'
-        if other_desktop_present; then
-                skip='./gtk-[34].0/*'
-                say "Another desktop is installed, so GTK theme settings are left alone"
-        fi
-        copy_tree "$NAVI_DIR/dotfiles/config" "$HOME/.config" "$BACKUP/config" "$skip"
-        if cmp -s "$HOME/.config/mimeapps.list" "$NAVI_DIR/dotfiles/config/navi-mimeapps.list"; then
-                mkdir -p "$BACKUP/config"
-                mv "$HOME/.config/mimeapps.list" "$BACKUP/config/mimeapps.list"
-        fi
-	copy_tree "$NAVI_DIR/dotfiles/bin" "$HOME/.local/bin" "$BACKUP/bin"
-        copy_tree "$NAVI_DIR/dotfiles/applications" "$HOME/.local/share/applications" "$BACKUP/applications"
-        local lfd="$HOME/.local/share/applications/lf.desktop"
-        if [ -f /usr/share/applications/lf.desktop ] && { [ ! -e "$lfd" ] || grep -q '^NotShowIn=navi;' "$lfd"; }; then
-                sed '/^\[Desktop Entry\]/a NotShowIn=navi;' /usr/share/applications/lf.desktop > "$lfd"
-        fi
-
-	local f
-	for f in .xinitrc .Xresources; do
-		[ -f "$NAVI_DIR/dotfiles/home/$f" ] || continue
-		if [ -e "$HOME/$f" ]; then
-			mkdir -p "$BACKUP/home"
-			cp -a "$HOME/$f" "$BACKUP/home/$f"
-		fi
-		cp "$NAVI_DIR/dotfiles/home/$f" "$HOME/$f"
-	done
+	local f dst
+	while IFS= read -r -d '' f; do
+		f=${f#"$NAVI_DIR"/}
+		dst=$(navi_dest "$f") || continue
+		install_file "$NAVI_DIR/$f" "$dst"
+	done < <(find "$NAVI_DIR/dotfiles" "$NAVI_DIR/docs" "$NAVI_DIR/wallpapers" -type f -print0)
 	chmod +x "$HOME/.xinitrc"
 
-        if [ -e "$HOME/Documents/Navi-Keybinds.pdf" ]; then
-                mkdir -p "$BACKUP/home"
-                cp -a "$HOME/Documents/Navi-Keybinds.pdf" "$BACKUP/home/Navi-Keybinds.pdf"
-        fi
-        cp "$NAVI_DIR/docs/KEYBINDS.pdf" "$HOME/Documents/Navi-Keybinds.pdf"
-        cp "$NAVI_DIR/wallpapers/wallpaper.jpg" "$HOME/Pictures/Wallpapers/wallpaper.jpg"
-
+	if cmp -s "$HOME/.config/mimeapps.list" "$NAVI_DIR/dotfiles/config/navi-mimeapps.list"; then
+		mkdir -p "$BACKUP/.config"
+		mv "$HOME/.config/mimeapps.list" "$BACKUP/.config/mimeapps.list"
+	fi
+	local lfd="$HOME/.local/share/applications/lf.desktop"
+	if [ -f /usr/share/applications/lf.desktop ] && { [ ! -e "$lfd" ] || grep -q '^NotShowIn=navi;' "$lfd"; }; then
+		sed '/^\[Desktop Entry\]/a NotShowIn=navi;' /usr/share/applications/lf.desktop > "$lfd"
+	fi
 }
 
 install_system_files() {
@@ -257,7 +226,6 @@ install_system_files() {
 		rm -f "$tmp"
 	fi
 
-	# Session entry
 	tmp=$(mktemp)
 	printf '[Desktop Entry]\nName=Navi\nComment=Navi dwm session\nExec=%s/.xinitrc\nType=Application\n' "$HOME" > "$tmp"
 	sudo install -Dm644 "$tmp" /usr/share/xsessions/navi.desktop
@@ -265,82 +233,83 @@ install_system_files() {
 }
 
 set_shell() {
-        command -v zsh >/dev/null 2>&1 || return 0
-        [ -e "$HOME/.config/navi/zsh-set" ] && return 0
-        mkdir -p "$HOME/.config/navi"
-        : > "$HOME/.config/navi/use-zsh"
-        : > "$HOME/.config/navi/zsh-set"
+	command -v zsh >/dev/null 2>&1 || return 0
+	[ -e "$HOME/.config/navi/zsh-set" ] && return 0
+	mkdir -p "$HOME/.config/navi"
+	: > "$HOME/.config/navi/use-zsh"
+	: > "$HOME/.config/navi/zsh-set"
 }
 
 has_display_manager() {
-        [ -e /etc/systemd/system/display-manager.service ] && return 0
-        local dm
-        for dm in sddm gdm lightdm lxdm ly ly-dm greetd slim; do
-                command -v "$dm" >/dev/null 2>&1 && return 0
-        done
-        return 1
+	[ -e /etc/systemd/system/display-manager.service ] && return 0
+	local dm
+	for dm in sddm gdm lightdm lxdm ly ly-dm greetd slim; do
+		command -v "$dm" >/dev/null 2>&1 && return 0
+	done
+	return 1
 }
 
 setup_autostart() {
-        local sh f
-        sh=$(getent passwd "$USER" | cut -d: -f7)
-        case $sh in
-        */bash) f="$HOME/.bash_profile" ;;
-        */zsh) f="$HOME/.zprofile" ;;
-        *) return 0 ;;
-        esac
-        has_display_manager && return 0
-        grep -qs 'navi-autostart' "$f" && return 0
-        case $sh in
-        */bash) [ -e "$f" ] || printf '[[ -f ~/.bashrc ]] && . ~/.bashrc\n' > "$f" ;;
-        esac
-        printf '\n# navi-autostart\nif [ -z "$DISPLAY" ] && [ "$XDG_VTNR" = "1" ]; then exec startx; fi\n' >> "$f"
+	local sh f
+	sh=$(getent passwd "$USER" | cut -d: -f7)
+	case $sh in
+	*/bash) f="$HOME/.bash_profile" ;;
+	*/zsh) f="$HOME/.zprofile" ;;
+	*) return 0 ;;
+	esac
+	has_display_manager && return 0
+	grep -qs 'navi-autostart' "$f" && return 0
+	case $sh in
+	*/bash) [ -e "$f" ] || printf '[[ -f ~/.bashrc ]] && . ~/.bashrc\n' > "$f" ;;
+	esac
+	# shellcheck disable=SC2016
+	printf '\n# navi-autostart\nif [ -z "$DISPLAY" ] && [ "$XDG_VTNR" = "1" ]; then exec startx; fi\n' >> "$f"
 }
 
 build_aur() {
-        local pkg=$1 url dir rc=0
-        url="https://aur.archlinux.org/$pkg.git"
-        dir=$(mktemp -d) || return 1
-        git clone --depth 1 "$url" "$dir/pkg" || rc=1
-        if [ $rc -eq 0 ]; then
-                ( cd "$dir/pkg" && makepkg -si --noconfirm ) || rc=1
-        fi
-        rm -rf "$dir"
-        return $rc
+	local pkg=$1 url dir rc=0
+	url="https://aur.archlinux.org/$pkg.git"
+	dir=$(mktemp -d) || return 1
+	git clone --depth 1 "$url" "$dir/pkg" || rc=1
+	if [ $rc -eq 0 ]; then
+		( cd "$dir/pkg" && makepkg -si --noconfirm ) || rc=1
+	fi
+	rm -rf "$dir"
+	return $rc
 }
 
 install_aur() {
-        local id=""
-        [ -r /etc/os-release ] && id=$(. /etc/os-release; echo "${ID:-}")
-        if [ "$id" = parabola ]; then
-                MISSING+=(yay abook)
-                return 0
-        fi
+	local id=""
+	[ -r /etc/os-release ] && id=$(. /etc/os-release; echo "${ID:-}")
+	if [ "$id" = parabola ]; then
+		MISSING+=(yay abook)
+		return 0
+	fi
 
-        say "Installing yay and abook"
-        if ! command -v yay >/dev/null 2>&1; then
-                if pacman -Si yay >/dev/null 2>&1; then
-                        sudo pacman -S --needed --noconfirm yay
-                else
-                        build_aur yay-bin
-                fi
-        fi
-        command -v yay >/dev/null 2>&1 || MISSING+=(yay)
+	say "Installing yay and abook"
+	if ! command -v yay >/dev/null 2>&1; then
+		if pacman -Si yay >/dev/null 2>&1; then
+			sudo pacman -S --needed --noconfirm yay
+		else
+			build_aur yay-bin
+		fi
+	fi
+	command -v yay >/dev/null 2>&1 || MISSING+=(yay)
 
-        command -v abook >/dev/null 2>&1 && return 0
-        if pacman -Si abook >/dev/null 2>&1; then
-                sudo pacman -S --needed --noconfirm abook
-        elif command -v yay >/dev/null 2>&1; then
-                yay -S --needed --noconfirm abook
-        fi
-        command -v abook >/dev/null 2>&1 || MISSING+=(abook)
+	command -v abook >/dev/null 2>&1 && return 0
+	if pacman -Si abook >/dev/null 2>&1; then
+		sudo pacman -S --needed --noconfirm abook
+	elif command -v yay >/dev/null 2>&1; then
+		yay -S --needed --noconfirm abook
+	fi
+	command -v abook >/dev/null 2>&1 || MISSING+=(abook)
 }
 
 record_install() {
-        mkdir -p "$HOME/.config/navi"
-        printf '%s\n' "$NAVI_DIR" > "$HOME/.config/navi/repo"
-        git -C "$NAVI_DIR" rev-parse HEAD > "$HOME/.config/navi/version" 2>/dev/null \
-                || rm -f "$HOME/.config/navi/version"
+	mkdir -p "$HOME/.config/navi"
+	printf '%s\n' "$NAVI_DIR" > "$HOME/.config/navi/repo"
+	git -C "$NAVI_DIR" rev-parse HEAD > "$HOME/.config/navi/version" 2>/dev/null \
+		|| rm -f "$HOME/.config/navi/version"
 }
 
 finish() {

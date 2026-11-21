@@ -20,6 +20,7 @@ xf86-input-libinput
 libx11
 libxft
 libxinerama
+imlib2
 libxrandr
 harfbuzz
 fontconfig
@@ -63,7 +64,6 @@ lf
 ueberzug
 ffmpegthumbnailer
 poppler
-pacman-contrib
 imagemagick
 djvulibre
 librsvg
@@ -78,6 +78,7 @@ mpv
 tmux
 cava
 mpd
+soundfont-fluid
 mpc
 ncmpcpp
 pamixer
@@ -118,9 +119,8 @@ newsboat
 # extras
 man-db
 man-pages
+pacman-contrib
 ntfs-3g
 dosfstools
 openssh
 yt-dlp
-soundfont-fluid
-imlib2

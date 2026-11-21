@@ -17,30 +17,6 @@ die()  { printf '\033[1;31mxx %s\033[0m\n' "$*" >&2; pause; exit 1; }
 ask()  { printf '%s ' "$1" >/dev/tty; read -r REPLY </dev/tty || REPLY=; }
 show() { printf '%s' "${1/#$HOME/\~}"; }
 
-other_desktop_present() {
-	local f
-	for f in /usr/share/xsessions/*.desktop /usr/share/wayland-sessions/*.desktop; do
-		[ -e "$f" ] || continue
-		[ "${f##*/}" = navi.desktop ] && continue
-		return 0
-	done
-	return 1
-}
-
-dest_for() {
-	case $1 in
-	dotfiles/config/*) printf '%s' "$HOME/.config/${1#dotfiles/config/}" ;;
-	dotfiles/bin/*) printf '%s' "$HOME/.local/bin/${1#dotfiles/bin/}" ;;
-	dotfiles/applications/*) printf '%s' "$HOME/.local/share/applications/${1#dotfiles/applications/}" ;;
-	dotfiles/home/.xinitrc | dotfiles/home/.Xresources) printf '%s' "$HOME/${1#dotfiles/home/}" ;;
-	docs/KEYBINDS.pdf) printf '%s' "$HOME/Documents/Navi-Keybinds.pdf" ;;
-	wallpapers/wallpaper.jpg) printf '%s' "$HOME/Pictures/Wallpapers/wallpaper.jpg" ;;
-	src/dwm/* | src/dwmblocks/* | src/st/* | src/slock/*) printf '%s' "$HOME/.local/src/${1#src/}" ;;
-	system/30-touchpad.conf) printf '%s' /etc/X11/xorg.conf.d/30-touchpad.conf ;;
-	*) return 1 ;;
-	esac
-}
-
 backup() {
 	local dst=$1 rel
 	[ -e "$dst" ] || return 0
@@ -68,8 +44,7 @@ put() {
 
 update_file() {
 	local path=$1 dst new edited=0
-	dst=$(dest_for "$path") || return 0
-	case $path in dotfiles/config/gtk-[34].0/*) other_desktop_present && return 0 ;; esac
+	dst=$(navi_dest "$path") || return 0
 	new="$REPO/$path"
 	[ -f "$new" ] || return 0
 	[ -e "$dst" ] && cmp -s "$new" "$dst" && return 0
@@ -109,7 +84,7 @@ update_file() {
 
 remove_file() {
 	local path=$1 dst
-	dst=$(dest_for "$path") || return 0
+	dst=$(navi_dest "$path") || return 0
 	[ -e "$dst" ] || return 0
 	printf '\nNavi no longer uses %s.\n' "$(show "$dst")"
 	ask '  Remove it? [y/N]'
@@ -159,6 +134,7 @@ rebuild() {
 
 REPO=$(cat "$CONF/repo" 2>/dev/null)
 [ -n "$REPO" ] && [ -d "$REPO/.git" ] || die "Can't find Navi's repository. Run Navi's installer from a clone of the repository first."
+. "$REPO/lib/navi-files.sh"
 if ! { git -C "$REPO" diff --quiet && git -C "$REPO" diff --cached --quiet; }; then
 	die "Navi's repository at $(show "$REPO") has uncommitted changes. Commit or remove them first."
 fi
@@ -200,6 +176,7 @@ case $REPLY in
 esac
 
 [ "$TARGET" = "$HEAD" ] || git -C "$REPO" merge --ff-only --quiet "$TARGET" || die "Could not update Navi's repository."
+. "$REPO/lib/navi-files.sh"
 
 new_packages
 

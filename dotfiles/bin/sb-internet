@@ -25,7 +25,6 @@ else
 	text="${icon_wifi_off} Disconnected"
 fi
 
-# VPN indicator, appended if active.
 if [ -n "$(cat /sys/class/net/tun*/operstate 2>/dev/null)" ]; then
 	text="${text} 🔒"
 fi

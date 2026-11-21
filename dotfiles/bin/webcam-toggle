@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 if pgrep -f "mpv.*v4l2" > /dev/null; then
-        pkill -f "mpv.*v4l2"
+	pkill -f "mpv.*v4l2"
 elif [ "$1" = tile ]; then
-        mpv av://v4l2:/dev/video0 --profile=low-latency --title=webcam-tiled &
+	mpv av://v4l2:/dev/video0 --profile=low-latency --title=webcam-tiled &
 else
-        mpv av://v4l2:/dev/video0 --profile=low-latency --title=webcam-preview --ontop --no-border --geometry=320x240-20-20 &
+	mpv av://v4l2:/dev/video0 --profile=low-latency --title=webcam-preview --ontop --no-border --geometry=320x240-20-20 &
 fi
