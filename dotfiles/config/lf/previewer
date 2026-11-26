@@ -1,0 +1,229 @@
+#!/bin/sh
+# Inspired by lfimg: https://github.com/thimc/lfimg
+file="$1"
+w="$2"
+h="$3"
+x="$4"
+y="$5"
+
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/lfv"
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+image() {
+	[ -s "$1" ] || return 1
+	if [ -p "$FIFO_UEBERZUG" ]; then
+		p=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')
+		printf '{"action":"add","identifier":"preview","x":%s,"y":%s,"width":%s,"height":%s,"scaler":"contain","path":"%s"}\n' \
+			"$x" "${2:-$y}" "$w" "${3:-$h}" "$p" > "$FIFO_UEBERZUG"
+		exit 1
+	elif have chafa; then
+		chafa -f symbols --size "${w}x${3:-$h}" -- "$1" 2>/dev/null && exit 1
+	fi
+	return 1
+}
+
+thumb() {
+	mkdir -p "$cache"
+	t="$cache/$(stat -Lc '%n %Y %s' -- "$file" | sha256sum | cut -d' ' -f1)"
+}
+
+text() {
+	bat=bat
+	have bat || bat=batcat
+	if have "$bat"; then
+		"$bat" --color=always --style=plain --line-range=:200 "$@" -- "$file"
+	else
+		head -n 200 -- "$file"
+	fi
+	exit 0
+}
+
+xmltext() {
+	bsdtar -xOf "$file" "$@" 2>/dev/null |
+		sed -e 's/<\/\(w:p\|a:p\|text:p\|text:h\|si\)>/\n/g' -e 's/<[^>]*>//g' \
+			-e 's/&amp;/\&/g; s/&lt;/</g; s/&gt;/>/g; s/&quot;/"/g; s/&apos;/'"'"'/g' |
+		grep -v '^[[:space:]]*$' | head -n 200 | fold -s -w "$w"
+	exit 0
+}
+
+firstimage() {
+	thumb
+	if [ ! -s "$t.img" ]; then
+		entry=$(bsdtar -tf "$file" 2>/dev/null | grep -iE "$1" | sort | head -n 1)
+		[ -z "$entry" ] && [ -n "$2" ] &&
+			entry=$(bsdtar -tf "$file" 2>/dev/null | grep -iE "$2" | sort | head -n 1)
+		[ -n "$entry" ] && bsdtar -xOf "$file" "$entry" > "$t.img" 2>/dev/null
+	fi
+	image "$t.img"
+}
+
+audio() {
+	info=$(ffprobe -v quiet -of default=noprint_wrappers=1 \
+		-show_entries format=duration,bit_rate:format_tags "$file" 2>/dev/null |
+		awk '
+		{
+			k = tolower($0); sub(/=.*/, "", k)
+			v = $0; sub(/^[^=]*=/, "", v)
+			if (k ~ /^tag:/) { k = substr(k, 5); if (!(k in t)) t[k] = v }
+			else if (k == "duration") d = v
+			else if (k == "bit_rate") b = v
+		}
+		function row(l, v) { if (v != "") printf "\033[38;2;139;154;184m%-8s\033[0m %s\n", l, v }
+		END {
+			row("Title", t["title"]); row("Artist", t["artist"])
+			if (t["album_artist"] != t["artist"]) row("Album by", t["album_artist"])
+			row("Album", t["album"]); row("Track", t["track"]); row("Disc", t["disc"])
+			row("Year", substr(t["date"], 1, 4)); row("Genre", t["genre"])
+			if (d ~ /^[0-9.]+$/) { s = int(d); row("Length", sprintf("%d:%02d", s / 60, s % 60)) }
+			if (b ~ /^[0-9]+$/) row("Bitrate", int(b / 1000) " kbps")
+		}')
+	[ -n "$info" ] || info=$(file -Lb -- "$file" | fold -s -w "$w")
+	printf '%s\n' "$info"
+	n=$(printf '%s\n' "$info" | wc -l)
+
+	top=$((y + n + 1))
+	left=$((h - n - 1))
+	[ "$left" -ge 4 ] || exit 0
+	thumb
+	[ -s "$t.jpg" ] || ffmpeg -v quiet -y -i "$file" -an -frames:v 1 "$t.jpg" \
+		</dev/null >/dev/null 2>&1
+	image "$t.jpg" "$top" "$left"
+	dir="${file%/*}"
+	for c in cover folder front Cover Folder Front; do
+		for e in jpg jpeg png; do
+			image "$dir/$c.$e" "$top" "$left"
+		done
+	done
+	exit 0
+}
+
+mimetype="$(file -Lb --mime-type -- "$file")"
+
+case "$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')" in
+	*.cbz|*.cbr|*.cb7|*.cbt)
+		firstimage '\.(jpe?g|png|webp|gif)$'
+		;;
+	*.epub)
+		firstimage 'cover.*\.(jpe?g|png)$' '\.(jpe?g|png)$'
+		;;
+	*.ino)
+		text --language=cpp
+		;;
+	*.md|*.markdown)
+		have glow && { glow -s dark -w "$w" -- "$file"; exit 0; }
+		have mdcat && { mdcat --columns "$w" -- "$file"; exit 0; }
+		text --language=markdown
+		;;
+	*.[1-9])
+		if [ "$mimetype" = text/troff ] && have man; then
+			MANWIDTH="$w" man -l -- "$file" 2>/dev/null | sed 's/.\x08//g' | head -n 200
+			exit 0
+		fi
+		;;
+esac
+
+case "$mimetype" in
+	image/svg+xml)
+		thumb
+		[ -s "$t.png" ] || rsvg-convert -w 1024 -o "$t.png" -- "$file" >/dev/null 2>&1
+		image "$t.png"
+		text --language=xml
+		;;
+	image/vnd.djvu|image/x-djvu)
+		thumb
+		[ -s "$t.tif" ] || ddjvu -format=tiff -page=1 -size=1024x1024 "$file" "$t.tif" >/dev/null 2>&1
+		image "$t.tif"
+		;;
+	image/heic|image/heif|image/avif|image/jxl)
+		thumb
+		if [ ! -s "$t.jpg" ]; then
+			im=convert
+			have magick && im=magick
+			"$im" "${file}[0]" "$t.jpg"
+		fi >/dev/null 2>&1
+		image "$t.jpg"
+		;;
+	image/*)
+		image "$file"
+		;;
+	video/*)
+		thumb
+		[ -s "$t.jpg" ] || ffmpegthumbnailer -i "$file" -o "$t.jpg" -s 0 >/dev/null 2>&1
+		image "$t.jpg"
+		;;
+	application/pdf)
+		thumb
+		[ -s "$t.jpg" ] || pdftoppm -jpeg -f 1 -singlefile -scale-to 1024 \
+			"$file" "$t" >/dev/null 2>&1
+		image "$t.jpg"
+		;;
+	application/epub+zip)
+		firstimage 'cover.*\.(jpe?g|png)$' '\.(jpe?g|png)$'
+		;;
+	font/*|application/font-sfnt|application/vnd.ms-opentype|application/x-font-ttf)
+		thumb
+		if [ ! -s "$t.png" ]; then
+			im=convert
+			have magick && im=magick
+			"$im" -size 1000x800 xc:'#0d0d12' -fill '#e8eaf0' -font "$file" \
+				-pointsize 64 -annotate +40+110 'ABCDEFGHIJKLM' \
+				-annotate +40+200 'NOPQRSTUVWXYZ' \
+				-annotate +40+290 'abcdefghijklm' \
+				-annotate +40+380 'nopqrstuvwxyz' \
+				-annotate +40+470 '0123456789' \
+				-pointsize 40 -annotate +40+580 'The quick brown fox jumps' \
+				-annotate +40+640 'over the lazy dog.' "$t.png" >/dev/null 2>&1
+		fi
+		image "$t.png"
+		;;
+	audio/*)
+		audio
+		;;
+	application/vnd.openxmlformats-officedocument.wordprocessingml.document)
+		xmltext word/document.xml
+		;;
+	application/vnd.openxmlformats-officedocument.presentationml.presentation)
+		xmltext 'ppt/slides/slide*.xml'
+		;;
+	application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+		xmltext xl/sharedStrings.xml
+		;;
+	application/vnd.oasis.opendocument.*)
+		xmltext content.xml
+		;;
+	application/msword)
+		out=
+		have catdoc && out=$(catdoc -w -- "$file" 2>/dev/null)
+		[ -z "$out" ] && have antiword && out=$(antiword -- "$file" 2>/dev/null)
+		[ -n "$out" ] && { printf '%s\n' "$out" | head -n 200 | fold -s -w "$w"; exit 0; }
+		;;
+	application/vnd.ms-excel)
+		out=
+		have xls2csv && out=$(xls2csv -- "$file" 2>/dev/null | tr -d '\f')
+		[ -n "$out" ] && { printf '%s\n' "$out" | head -n 200; exit 0; }
+		;;
+	application/x-object)
+		file -Lb -- "$file" | fold -s -w "$w"
+		have nm && nm -C -- "$file" 2>/dev/null | head -n 200
+		exit 0
+		;;
+	application/x-bittorrent)
+		have transmission-show && { transmission-show -- "$file"; exit 0; }
+		;;
+	text/html|application/xhtml+xml)
+		have w3m && { w3m -dump -cols "$w" -T text/html "$file"; exit 0; }
+		have lynx && { lynx -dump -width="$w" -- "$file"; exit 0; }
+		text --language=html
+		;;
+	text/*|application/json|application/x-shellscript|application/javascript|inode/x-empty)
+		text
+		;;
+	application/*)
+		list=$(bsdtar -tf "$file" 2>/dev/null | head -n 200)
+		[ -n "$list" ] && { printf '%s\n' "$list"; exit 0; }
+		;;
+esac
+
+file -Lb -- "$file" | fold -s -w "$w"
+exit 0

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+paused=$(dunstctl is-paused 2>/dev/null)
+dunstctl set-paused true 2>/dev/null
+choice="$(printf 'Reboot\nPower Off\nLog Out\nSleep\n' | rofi -dmenu -theme ~/.config/rofi/power-menu.rasi -p "")"
+[ "$paused" = false ] && dunstctl set-paused false
+
+case "$choice" in
+	"Reboot")
+		sudo reboot
+		;;
+	"Power Off")
+		sudo poweroff
+		;;
+	"Log Out")
+		pkill -x dwm
+		;;
+	"Sleep")
+		loginctl suspend || systemctl suspend || sudo zzz
+		;;
+esac

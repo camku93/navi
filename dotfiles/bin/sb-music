@@ -1,0 +1,29 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+	1) mpc -q toggle ;;
+	2) setsid -f "$TERMINAL" -e ncmpcppv ;;
+	3) notify-send "Music module" "Shows the song that's playing.
+- Left click to play or pause
+- Middle click opens the music player
+- Scroll for the next or previous song" ;;
+	4) mpc -q prev ;;
+	5) mpc -q next ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+. ~/.local/bin/bar-colors.sh
+
+case $(mpc 2>/dev/null | sed -n 2p) in
+	"[playing]"*) icon=$(printf '\U000f075a') ;;
+	"[paused]"*) icon=$(printf '\U000f03e4') ;;
+	*) exit 0 ;;
+esac
+
+song=$(mpc current -f '%title%')
+[ -n "$song" ] || { song=$(mpc current -f '%file%'); song=${song##*/}; song=${song%.*}; }
+
+[ ${#song} -gt 30 ] && song="${song:0:29}…"
+while [ "$(printf %s "$song" | wc -c)" -gt 48 ]; do song="${song%??}…"; done
+
+bar_block "$icon" "$song"

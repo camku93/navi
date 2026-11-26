@@ -1,0 +1,12 @@
+# Optional extras, not installed by default. To install them all:
+#   sudo pacman -S --needed $(grep -v '^#' packages-optional.txt)
+# tlp: laptop battery tuning
+tlp
+# tlp-openrc: OpenRC service for tlp (Artix and Parabola)
+tlp-openrc
+# texlive: LaTeX (large download)
+texlive
+# pandoc: convert documents (docx, md, pdf)
+pandoc
+# libreoffice-fresh: office suite
+libreoffice-fresh

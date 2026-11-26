@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=nsxiv
+GenericName=Image Viewer
+Comment=Opens an image with the rest of its folder
+Exec=nsxiv-folder %f
+Terminal=false
+NoDisplay=true
+OnlyShowIn=navi;

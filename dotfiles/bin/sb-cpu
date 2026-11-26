@@ -1,0 +1,14 @@
+#!/bin/sh
+
+. ~/.local/bin/bar-colors.sh
+
+case $BLOCK_BUTTON in
+	1) setsid -f "$TERMINAL" -e navi-dusk htop ;;
+	3) notify-send "CPU module" "Shows 1-minute load average.
+Left click opens htop." ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+load="$(cut -d' ' -f1 /proc/loadavg)"
+
+bar_block "$(printf '\363\260\230\232')" "$load"

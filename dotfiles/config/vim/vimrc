@@ -1,0 +1,19 @@
+" ~/.config/vim/vimrc
+
+set nocompatible              " use Vim, not old vi behaviour
+syntax on                     " colored syntax
+filetype plugin indent on     " per-language indenting
+
+set number                    " line numbers
+set relativenumber            " numbers relative to the cursor line
+set tabstop=4                 " a tab looks 4 columns wide
+set shiftwidth=4              " indent by 4 columns
+set ignorecase smartcase      " search ignores case unless you type a capital
+set incsearch hlsearch        " search while typing, highlight matches
+set scrolloff=5               " keep 5 lines visible around the cursor
+set mouse=a                   " mouse works in all modes
+set splitright splitbelow     " new splits open right and below
+
+" Copy to the system clipboard. This needs a Vim built with clipboard support
+" (Arch package: gvim). Uncomment it if you install that.
+" set clipboard=unnamedplus

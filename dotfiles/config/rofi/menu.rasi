@@ -1,0 +1,83 @@
+configuration {
+	font: "JetBrainsMono Nerd Font Propo 11";
+	show-icons: false;
+	disable-history: true;
+	sort: false;
+}
+
+window {
+	location: center;
+	anchor: center;
+	width: 44em;
+	background-color: #0d0d12bf;
+	border: 2px;
+	border-color: #b8567f;
+	border-radius: 0px;
+	padding: 0.8em;
+}
+
+mainbox {
+	background-color: transparent;
+	children: [inputbar, listview];
+	spacing: 0.7em;
+}
+
+inputbar {
+	background-color: #4d2735;
+	text-color: #e8eaf0;
+	padding: 0.55em;
+	spacing: 0.55em;
+	children: [prompt, entry];
+}
+
+prompt {
+	background-color: transparent;
+	text-color: #e8eaf0;
+}
+
+entry {
+	background-color: transparent;
+	text-color: #e8eaf0;
+	placeholder: "Search...";
+	placeholder-color: #8b9ab8;
+}
+
+listview {
+	lines: 10;
+	dynamic: true;
+	background-color: transparent;
+	spacing: 2px;
+}
+
+element normal.normal {
+	background-color: transparent;
+	text-color: #e8eaf0;
+	padding: 0.4em;
+}
+
+element alternate.normal {
+	background-color: transparent;
+	text-color: #e8eaf0;
+	padding: 0.4em;
+}
+
+element selected.normal {
+	background-color: #b8567f;
+	text-color: #e8eaf0;
+	padding: 0.4em;
+}
+
+element-text {
+	background-color: transparent;
+	text-color: inherit;
+}
+
+error-message {
+	background-color: transparent;
+	padding: 4px;
+}
+
+textbox {
+	background-color: transparent;
+	text-color: #e8eaf0;
+}

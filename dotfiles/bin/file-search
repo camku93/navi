@@ -1,0 +1,47 @@
+#!/bin/sh
+
+cd "$HOME" || exit
+file=$(fd . --type f --hidden \
+	--exclude .git --exclude node_modules --exclude .cache --exclude .var \
+	--exclude .mozilla --exclude .librewolf --exclude .config/librewolf \
+	--exclude .local/share/Trash 2>/dev/null \
+	| awk '
+	BEGIN {
+		n = split("png jpg jpeg gif webp bmp svg ico tiff xcf", a, " ")
+		for (i = 1; i <= n; i++) m[a[i]] = "image-x-generic"
+		n = split("mp3 flac ogg opus wav m4a aac wma", a, " ")
+		for (i = 1; i <= n; i++) m[a[i]] = "audio-x-generic"
+		n = split("mp4 mkv webm avi mov wmv flv m4v", a, " ")
+		for (i = 1; i <= n; i++) m[a[i]] = "video-x-generic"
+		n = split("zip tar gz xz bz2 zst 7z rar", a, " ")
+		for (i = 1; i <= n; i++) m[a[i]] = "application-x-archive"
+		n = split("sh bash zsh py pl rb lua", a, " ")
+		for (i = 1; i <= n; i++) m[a[i]] = "text-x-script"
+		n = split("doc docx odt rtf", a, " ")
+		for (i = 1; i <= n; i++) m[a[i]] = "x-office-document"
+		n = split("xls xlsx ods csv", a, " ")
+		for (i = 1; i <= n; i++) m[a[i]] = "x-office-spreadsheet"
+		m["pdf"] = "application-pdf"
+		m["epub"] = "application-epub+zip"
+		m["html"] = "text-html"
+		m["htm"] = "text-html"
+		m["md"] = "text-markdown"
+	}
+	{
+		name = $0
+		sub(/.*\//, "", name)
+		ext = ""
+		if (name ~ /\./) {
+			ext = name
+			sub(/.*\./, "", ext)
+			ext = tolower(ext)
+		}
+		icon = (ext in m) ? m[ext] : "text-x-generic"
+		printf "%s%cicon%c%s\n", $0, 0, 31, icon
+	}' \
+	| rofi -dmenu -i -matching normal -sort -sorting-method fzf \
+	-show-icons -icon-theme breeze-dark \
+	-p "Files" -theme ~/.config/rofi/menu.rasi)
+[ -z "$file" ] && exit
+
+xdg-open "$HOME/$file" >/dev/null 2>&1 &

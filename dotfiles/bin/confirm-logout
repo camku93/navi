@@ -1,0 +1,10 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+answer=$(printf 'No\nYes\n' | rofi -dmenu -i -no-custom -selected-row 0 \
+	-p "Log out?" -theme ~/.config/rofi/menu.rasi \
+	-theme-str 'window { width: 23em; }
+		inputbar { children: [ prompt ]; }
+		listview { lines: 1; columns: 2; fixed-height: true; }
+		element-text { horizontal-align: 0.5; }')
+[ "$answer" = "Yes" ] && pkill -x dwm

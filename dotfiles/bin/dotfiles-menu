@@ -1,0 +1,54 @@
+#!/bin/bash
+
+declare -A configs=(
+	["Desktop: dwm config.h"]="$HOME/.local/src/dwm/config.h"
+	["Desktop: dwm dwm.c"]="$HOME/.local/src/dwm/dwm.c"
+	["Desktop: dwmblocks"]="$HOME/.local/src/dwmblocks/config.h"
+	["Desktop: st"]="$HOME/.local/src/st/config.h"
+	["Desktop: slock"]="$HOME/.local/src/slock/config.h"
+	["Desktop: xinitrc"]="$HOME/.xinitrc"
+	["Desktop: Xresources"]="$HOME/.Xresources"
+	["Desktop: bar colors"]="$HOME/.local/bin/bar-colors.sh"
+	["Desktop: picom"]="$HOME/.config/picom/picom.conf"
+	["Desktop: dunst"]="$HOME/.config/dunst/dunstrc"
+	["Desktop: GTK theme"]="$HOME/.config/gtk-3.0/settings.ini"
+	["Desktop: default apps"]="$HOME/.config/navi-mimeapps.list"
+	["Menus: launcher"]="$HOME/.config/rofi/launcher.rasi"
+	["Menus: menu"]="$HOME/.config/rofi/menu.rasi"
+	["Menus: power menu"]="$HOME/.config/rofi/power-menu.rasi"
+	["Menus: rofi settings"]="$HOME/.config/rofi/config.rasi"
+	["Shell: zshrc"]="$HOME/.config/navi/zsh/.zshrc"
+	["Shell: tmux"]="$HOME/.config/tmux/tmux.conf"
+	["Editor: vimrc"]="$HOME/.config/vim/vimrc"
+	["Editor: NvChad mappings"]="$HOME/.config/nvim/lua/mappings.lua"
+	["Bar: battery"]="$HOME/.local/bin/sb-battery"
+	["Bar: cpu"]="$HOME/.local/bin/sb-cpu"
+	["Bar: internet"]="$HOME/.local/bin/sb-internet"
+	["Bar: mailbox"]="$HOME/.local/bin/sb-mailbox"
+	["Bar: time"]="$HOME/.local/bin/sb-time"
+	["Bar: volume"]="$HOME/.local/bin/sb-volume"
+	["Music: mpd"]="$HOME/.config/mpd/mpd.conf"
+	["Music: ncmpcpp"]="$HOME/.config/ncmpcpp/config"
+	["Music: cava"]="$HOME/.config/cava/config"
+	["Mail: neomutt"]="$HOME/.config/neomutt/neomuttrc"
+	["Mail: neomutt colors"]="$HOME/.config/mutt/colors"
+	["Files: lf"]="$HOME/.config/lf/lfrc"
+	["Files: lf colors"]="$HOME/.config/lf/colors"
+	["Files: PDF reader (zathura)"]="$HOME/.config/zathura/zathurarc"
+	["Files: file search"]="$HOME/.local/bin/file-search"
+	["Files: usb mount"]="$HOME/.local/bin/usb-mount"
+	["Files: usb unmount"]="$HOME/.local/bin/usb-unmount"
+	["Tools: screenshot"]="$HOME/.local/bin/screenshot"
+	["Tools: display switch"]="$HOME/.local/bin/display-switch"
+	["Tools: this menu"]="$HOME/.local/bin/dotfiles-menu"
+	["Monitors: btop"]="$HOME/.config/btop/btop.conf"
+	["Monitors: htop"]="$HOME/.config/htop/htoprc"
+)
+
+choice=$(printf '%s\n' "${!configs[@]}" | sort \
+	| rofi -dmenu -i -p "Edit config" \
+	-theme ~/.config/rofi/menu.rasi)
+[ -z "$choice" ] && exit
+
+file="${configs[$choice]}"
+setsid -f "${TERMINAL:-st}" -e "${EDITOR:-vim}" "$file"

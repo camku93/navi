@@ -1,0 +1,14 @@
+#!/bin/sh
+
+dir="$HOME/Pictures/Screenshots"
+mkdir -p "$dir"
+file="$dir/$(date '+%y%m%d-%H%M-%S').png"
+
+case "$1" in
+	area) maim -s "$file" ;;
+	*)    maim "$file" ;;
+esac
+
+[ -f "$file" ] || exit 0
+xclip -selection clipboard -t image/png -i "$file"
+notify-send "Screenshot saved and copied" "$file"

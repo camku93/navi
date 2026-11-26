@@ -1,0 +1,46 @@
+#!/bin/sh
+
+. ~/.local/bin/bar-colors.sh
+
+mailroot="$HOME/.local/share/mail"
+icon_mail=$(printf '')
+
+has_account() {
+	[ -f "$HOME/.config/mutt/muttrc" ] && return 0
+	[ -f "$HOME/.config/neomutt/neomuttrc" ] && return 0
+	return 1
+}
+
+case $BLOCK_BUTTON in
+	1)
+		if has_account; then
+			# shellcheck disable=SC2016
+			setsid -w -f "$TERMINAL" -e sh -c 'export GPG_TTY=$(tty); mbsync -a; exec neomutt'
+		else
+			# shellcheck disable=SC2016
+			setsid -w -f "$TERMINAL" -e sh -c '
+				echo "No mail account yet."
+				echo "Add one with:  mw -a you@example.com"
+				echo "Then click the mail icon again."
+				echo
+				exec "${SHELL:-sh}"'
+		fi
+		pkill -RTMIN+12 dwmblocks
+		;;
+	3)
+		notify-send "Mail module" \
+			"Left click opens mail (mutt-wizard)"
+		;;
+	6)
+		setsid -f "$TERMINAL" -e "$EDITOR" "$0"
+		;;
+esac
+
+unread=$(find "$mailroot"/*/INBOX/new -type f 2>/dev/null | wc -l)
+[ -z "$unread" ] && unread=0
+
+if [ "$unread" = "0" ]; then
+	bar_button "$icon_mail"
+else
+	bar_button "$icon_mail" "$unread"
+fi

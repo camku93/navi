@@ -1,0 +1,13 @@
+#!/bin/bash
+
+. ~/.local/bin/bar-colors.sh
+
+icon_help=$(printf '\U000f0625')
+
+case $BLOCK_BUTTON in
+	1) setsid -f zathura ~/Documents/Navi-Keybinds.pdf;;
+	3) notify-send "Help module" "Left click opens ~/Documents/Navi-Keybinds.pdf, your keybind reference" ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+bar_button "$icon_help"

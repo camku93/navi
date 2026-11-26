@@ -1,0 +1,9 @@
+*.o
+*.bak*
+*.orig
+*.rej
+*.swp
+src/dwm/dwm
+src/st/st
+src/dwmblocks/dwmblocks
+src/slock/slock

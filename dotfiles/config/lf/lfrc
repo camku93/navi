@@ -1,0 +1,25 @@
+
+set ifs "\n"
+set previewer ~/.config/lf/previewer
+set cleaner ~/.config/lf/cleaner
+
+# UI colors
+set cursorpreviewfmt "\033[7m"
+
+# Open text files in the editor, everything else with xdg-open
+cmd open ${{
+	case $(file --mime-type -Lb "$f") in
+		text/*|application/json|application/x-shellscript|inode/x-empty)
+			$EDITOR $fx ;;
+		*)
+			for f in $fx; do
+				setsid -f xdg-open "$f" >/dev/null 2>&1
+			done ;;
+	esac
+}}
+
+map <enter> open
+
+set promptfmt "\033[35;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m"
+
+map b $setbg "$f"

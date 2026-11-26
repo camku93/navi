@@ -1,0 +1,30 @@
+#!/bin/sh
+# based on lfimg https://github.com/thimc/lfimg
+ub='' out=${LFV_OUTPUT:-}
+if command -v ueberzugpp >/dev/null 2>&1; then
+	if [ -z "$out" ]; then
+		if [ -n "$KITTY_WINDOW_ID" ] || [ -n "$KONSOLE_VERSION" ] || [ -n "$WEZTERM_PANE" ] || [ "$TERM" = xterm-ghostty ]; then
+			out=kitty
+		else
+			case $TERM in foot*) out=sixel ;; esac
+		fi
+	fi
+	ub="ueberzugpp layer --silent --no-cache${out:+ -o $out}"
+elif command -v ueberzug >/dev/null 2>&1; then
+	ub="ueberzug layer --silent --parser json"
+fi
+case $out in
+kitty | sixel) ;;
+*) if [ -z "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ] || [ -n "$SSH_TTY" ]; then ub=''; fi ;;
+esac
+[ -n "$ub" ] || exec lf "$@"
+FIFO_UEBERZUG="$(mktemp -u --suffix "ueberzug-$$")"
+mkfifo "$FIFO_UEBERZUG"
+$ub < "$FIFO_UEBERZUG" &
+UB_PID=$!
+exec 3>"$FIFO_UEBERZUG"
+export FIFO_UEBERZUG
+lf "$@"
+exec 3>&-
+rm "$FIFO_UEBERZUG"
+kill "$UB_PID" 2>/dev/null

@@ -1,0 +1,24 @@
+[global]
+    font = JetBrainsMono Nerd Font Propo 10
+    markup = full
+    format = "<span foreground='#b8567f'><b>%s</b></span>\n%b"
+    follow = mouse
+    frame_width = 2
+    corner_radius = 0
+    padding = 12
+    horizontal_padding = 14
+
+[urgency_low]
+    background = "#0d0d12bf"
+    foreground = "#e8eaf0"
+    frame_color = "#4d2735"
+
+[urgency_normal]
+    background = "#0d0d12bf"
+    foreground = "#e8eaf0"
+    frame_color = "#4d2735"
+
+[urgency_critical]
+    background = "#0d0d12bf"
+    foreground = "#e8eaf0"
+    frame_color = "#b8567f"

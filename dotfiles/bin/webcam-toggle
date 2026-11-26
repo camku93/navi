@@ -1,0 +1,19 @@
+#!/bin/sh
+
+cam=/dev/video0
+for d in /sys/class/video4linux/video*; do
+	[ "$(cat "$d/index" 2>/dev/null)" = 0 ] || continue
+	case $(cat "$d/name" 2>/dev/null) in
+	*"IR Camera"* | *Infrared*) continue ;;
+	esac
+	cam=/dev/${d##*/}
+	break
+done
+
+if pgrep -f "mpv.*v4l2" > /dev/null; then
+	pkill -f "mpv.*v4l2"
+elif [ "$1" = tile ]; then
+	mpv "av://v4l2:$cam" --profile=low-latency --title=webcam-tiled &
+else
+	mpv "av://v4l2:$cam" --profile=low-latency --title=webcam-preview --ontop --no-border --geometry=320x240-20-20 &
+fi

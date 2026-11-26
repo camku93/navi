@@ -1,0 +1,96 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+file="$HOME/.config/navi/scale"
+
+detect() {
+	xrandr --query 2>/dev/null | awk '
+		/ connected/ && /[0-9]+mm x [0-9]+mm/ {
+			match($0, /[0-9]+x[0-9]+\+/); px = substr($0, RSTART, RLENGTH); sub(/x.*/, "", px)
+			match($0, /[0-9]+mm x/); mm = substr($0, RSTART, RLENGTH); sub(/mm x/, "", mm)
+			if (px > 0 && mm > 0) { dpi = px * 25.4 / mm * 0.8; found = 1 }
+			if (/ primary /) exit
+		}
+		END {
+			if (!found) dpi = 96
+			step = int(dpi / 24 + 0.5) * 24
+			if (step < 96) step = 96
+			if (step > 192) step = 192
+			print step
+		}'
+}
+
+popups() {
+	read -r top float < "$HOME/.cache/dwm-barpos" 2>/dev/null
+	gap=6
+	if [ "${top:-1}" = 1 ]; then
+		font=$((dpi * 18 / 96))
+		y=$((font * 3 / 2 + gap))
+		[ "${float:-1}" = 1 ] && y=$((y + gap))
+	else
+		y=$gap
+	fi
+	mkdir -p "$HOME/.config/dunst/dunstrc.d"
+	printf '[global]\n    offset = %sx%s\n    gap_size = %s\n' $(((gap * 96 + dpi / 2) / dpi)) \
+		$(((y * 96 + dpi / 2) / dpi)) $(((gap * 96 + dpi / 2) / dpi)) > "$HOME/.config/dunst/dunstrc.d/navi-position.conf"
+	mkdir -p "$HOME/.config/rofi"
+	printf 'window {\n\tx-offset: -%spx;\n\ty-offset: %spx;\n}\n' "$gap" "$y" > "$HOME/.config/rofi/navi-position.rasi"
+	pgrep -x dunst >/dev/null && dunstctl reload >/dev/null 2>&1
+}
+
+apply() {
+	dpi=$(cat "$file" 2>/dev/null)
+	case $dpi in
+	96 | 120 | 144 | 168 | 192) ;;
+	*)
+		dpi=$(detect)
+		mkdir -p "${file%/*}"
+		printf '%s\n' "$dpi" > "$file" ;;
+	esac
+	printf 'Xft.dpi: %s\nXcursor.theme: Adwaita\nXcursor.size: %s\n' "$dpi" $((dpi / 4)) | xrdb -merge
+	mkdir -p "$HOME/.config/rofi"
+	printf 'configuration {\n\tdpi: %s;\n}\n' "$dpi" > "$HOME/.config/rofi/navi-scale.rasi"
+	printf 'Xft/DPI %s\nGtk/CursorThemeName "Adwaita"\nGtk/CursorThemeSize %s\n' \
+		$((dpi * 1024)) $((dpi / 4)) > "$HOME/.config/navi/xsettingsd.conf"
+	pkill -HUP -x xsettingsd
+	popups
+	printf 'export XCURSOR_THEME=Adwaita XCURSOR_SIZE=%s\n' $((dpi / 4))
+}
+
+if [ "$1" = --apply ]; then
+	apply
+	exit 0
+fi
+
+if [ "$1" = --popups ]; then
+	dpi=$(cat "$file" 2>/dev/null)
+	dpi=${dpi:-96}
+	popups
+	exit 0
+fi
+
+current=$(cat "$file" 2>/dev/null)
+choice=$(for d in 96 120 144 168 192; do
+	label="$((d * 100 / 96))%"
+	[ "$d" = "$current" ] && label="$label (current)"
+	printf '%s\n' "$label"
+done | rofi -dmenu -i -p "Display scale" -theme ~/.config/rofi/menu.rasi)
+[ -z "$choice" ] && exit 0
+
+case ${choice%%%*} in
+100) dpi=96 ;;
+125) dpi=120 ;;
+150) dpi=144 ;;
+175) dpi=168 ;;
+200) dpi=192 ;;
+*) exit 0 ;;
+esac
+
+mkdir -p "${file%/*}"
+printf '%s\n' "$dpi" > "$file"
+apply >/dev/null
+pkill -x dunst
+while pgrep -x dunst >/dev/null; do sleep 0.1; done
+dunst >/dev/null 2>&1 &
+sleep 0.3
+notify-send "Display scale" "Set to ${choice%% *}. Log out and back in to apply it everywhere."

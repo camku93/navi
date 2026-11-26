@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ncmpcpp
+GenericName=Music Player
+Comment=ncmpcpp with album art and visualizer
+Exec=st -e ncmpcppv
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+OnlyShowIn=navi;

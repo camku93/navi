@@ -1,0 +1,70 @@
+configuration {
+	font: "JetBrainsMono Nerd Font Propo 11";
+	hover-select: true;
+	me-select-entry: "";
+	me-accept-entry: "MousePrimary";
+}
+
+window {
+	location: northeast;
+	anchor: northeast;
+	width: 11em;
+	background-color: #0d0d12bf;
+	border: 2px;
+	border-color: #b8567f;
+	border-radius: 0px;
+	padding: 0.5em;
+}
+
+mainbox {
+	background-color: transparent;
+	children: [listview];
+}
+
+listview {
+	lines: 4;
+	background-color: transparent;
+	spacing: 0.25em;
+}
+
+element normal.normal {
+	background-color: transparent;
+	text-color: #e8eaf0;
+	padding: 0.4em;
+	border-radius: 0px;
+}
+
+element alternate.normal {
+	background-color: transparent;
+	text-color: #e8eaf0;
+	padding: 0.4em;
+	border-radius: 0px;
+}
+
+element selected.normal {
+	background-color: #b8567f;
+	text-color: #e8eaf0;
+	padding: 0.4em;
+	border-radius: 0px;
+}
+
+element-text {
+	background-color: inherit;
+	text-color: inherit;
+}
+
+element-icon {
+	background-color: inherit;
+}
+
+error-message {
+	background-color: transparent;
+	padding: 4px;
+}
+
+textbox {
+	background-color: transparent;
+	text-color: #e8eaf0;
+}
+
+@import "navi-position.rasi"
