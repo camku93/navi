@@ -1565,6 +1565,8 @@ propertynotify(XEvent *e)
 
 	if ((ev->window == root) && (ev->atom == XA_WM_NAME))
 		updatestatus();
+	else if ((ev->window == root) && (ev->atom == XA_RESOURCE_MANAGER))
+		reloadcolors();
 	else if (ev->state == PropertyDelete)
 		return; /* ignore */
 	else if ((c = wintoclient(ev->window))) {
@@ -2542,13 +2544,6 @@ reloadcolors(void)
 void
 updatestatus(void)
 {
-	char cmd[16];
-
-	if (gettextprop(root, XA_WM_NAME, cmd, sizeof cmd) && !strcmp(cmd, "navi:reload")) {
-		reloadcolors();
-		XStoreName(dpy, root, stext);
-		return;
-	}
 	if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext))) {
 		strcpy(stext, "dwm-"VERSION);
 		statusw = TEXTW(stext) - lrpad + 2;

@@ -225,12 +225,10 @@ reload() {
 	local pid
 	[ -n "${DISPLAY:-}" ] || return 0
 	xrdb -merge "$OUT/Xresources"
-	if pgrep -x dwm >/dev/null; then
+	if pgrep -x dwmblocks >/dev/null; then
 		pkill -x dwmblocks
 		for _ in $(seq 20); do pgrep -x dwmblocks >/dev/null || break; sleep 0.1; done
-		xsetroot -name navi:reload
-		sleep 0.3
-		command -v dwmblocks >/dev/null && setsid -f dwmblocks >/dev/null 2>&1
+		setsid -f dwmblocks >/dev/null 2>&1
 	fi
 	for pid in $(pgrep -x st); do
 		catches_usr1 "$pid" && kill -USR1 "$pid"
