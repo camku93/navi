@@ -53,7 +53,7 @@
 | Super+Return | Open terminal |
 | Super+Shift+Return | Master terminal: show / hide a floating terminal |
 
-## Apps
+## Programs
 
 | Key | Action |
 | --- | --- |
