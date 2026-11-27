@@ -19,6 +19,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xresource.h>
 
 #include "util.h"
 
@@ -402,6 +403,36 @@ usage(void)
 	die("usage: slock [-v] [-f] [-m message]\n");
 }
 
+static const char *
+themecolor(XrmDatabase db, const char *name, const char *fallback)
+{
+	char *type;
+	XrmValue v;
+	int i;
+
+	if (!db || !XrmGetResource(db, name, name, &type, &v) || !v.addr
+	    || v.addr[0] != '#' || strlen(v.addr) != 7)
+		return fallback;
+	for (i = 1; i < 7; i++)
+		if (!isxdigit((unsigned char)v.addr[i]))
+			return fallback;
+	return v.addr;
+}
+
+static void
+loadtheme(Display *dpy)
+{
+	char *resm;
+	XrmDatabase db;
+
+	XrmInitialize();
+	if (!(resm = XResourceManagerString(dpy)) || !(db = XrmGetStringDatabase(resm)))
+		return;
+	colorname[INPUT] = themecolor(db, "slock.input", colorname[INPUT]);
+	colorname[FAILED] = themecolor(db, "slock.failed", colorname[FAILED]);
+	text_color = themecolor(db, "slock.text", text_color);
+}
+
 int
 main(int argc, char **argv) {
 	struct xrandr rr;
@@ -457,6 +488,7 @@ main(int argc, char **argv) {
 
 	if (!(dpy = XOpenDisplay(NULL)))
 		die("slock: cannot open display\n");
+	loadtheme(dpy);
 
 	/* drop privileges */
 	if (setgroups(0, NULL) < 0)

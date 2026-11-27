@@ -1,0 +1,49 @@
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.TH NAVI-THEME 1 2026-11-27 Navi "Navi Manual"
+.nh
+.SH NAME
+navi-theme \- change Navi's colors
+.SH SYNOPSIS
+.B navi-theme
+.RI [ name ]
+.br
+.B navi-theme
+.RB [ \-m | \-r ]
+.SH DESCRIPTION
+Switches Navi's color theme without logging out.
+The theme stays after you log out.
+Run
+.B navi-theme
+by itself to list the themes; the current one is marked with
+.BR * .
+.SH OPTIONS
+.TP
+.I name
+Switch to that theme.
+.TP
+.BR \-m ", " \-\-menu
+Pick a theme from a menu.
+.TP
+.BR \-r ", " \-\-reapply
+Apply the current theme again.
+.TP
+.BR \-\-login ", " \-\-filter
+Used by Navi itself.
+.SH THEMES
+navi (default), midnight, mono, moss, ember, crimson, grove, phosphor, violet.
+.SH YOUR OWN THEMES
+Copy a theme from
+.I ~/.local/share/navi/themes/
+to
+.I ~/.config/navi/themes/
+with a new name and change its colors.
+.SH FILES
+.TP
+.I ~/.local/share/navi/themes/
+Navi's themes.
+.TP
+.I ~/.config/navi/themes/
+Your themes.
+.TP
+.I ~/.config/navi/theme/
+The current theme.

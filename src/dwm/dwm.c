@@ -20,6 +20,7 @@
  *
  * To understand everything else, start reading main().
  */
+#include <ctype.h>
 #include <errno.h>
 #include <locale.h>
 #include <signal.h>
@@ -34,6 +35,7 @@
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
+#include <X11/Xresource.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
@@ -249,6 +251,8 @@ static void updateclientlist(void);
 static int updategeom(void);
 static void updatenumlockmask(void);
 static void updatesizehints(Client *c);
+static void loadxrdb(void);
+static void reloadcolors(void);
 static void updatestatus(void);
 static void updatetitle(Client *c);
 static int checkfullscreenatom(Client *c);
@@ -305,6 +309,11 @@ static Window root, wmcheckwin;
 static int previewhidden = 0;
 
 /* configuration, allows nested code to access above variables */
+typedef struct {
+	const char *name;
+	char *dst;
+} XrdbColor;
+
 #include "config.h"
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
@@ -1909,10 +1918,12 @@ setup(void)
 	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
 	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
 	/* init appearance */
+	XrmInitialize();
+	loadxrdb();
         scheme = ecalloc(LENGTH(colors) + 1, sizeof(Clr *));
-        scheme[LENGTH(colors)] = drw_scm_create(drw, colors[0], alphas[0], 3);
+        scheme[LENGTH(colors)] = drw_scm_create(drw, (const char **)colors[0], alphas[0], 3);
 	for (i = 0; i < LENGTH(colors); i++)
-		scheme[i] = drw_scm_create(drw, colors[i], alphas[i], 3);
+		scheme[i] = drw_scm_create(drw, (const char **)colors[i], alphas[i], 3);
 	/* init bars */
 	updatebars();
 	updatestatus();
@@ -2476,8 +2487,68 @@ updatesizehints(Client *c)
 }
 
 void
+loadxrdb(void)
+{
+	Atom type;
+	int fmt, j;
+	unsigned long n, after;
+	unsigned char *p = NULL;
+	char name[64], *rtype;
+	unsigned int i;
+	XrmDatabase db;
+	XrmValue v;
+
+	if (XGetWindowProperty(dpy, root, XA_RESOURCE_MANAGER, 0, 1 << 20, False,
+	    XA_STRING, &type, &fmt, &n, &after, &p) != Success || !p)
+		return;
+	if ((db = XrmGetStringDatabase((char *)p))) {
+		for (i = 0; i < LENGTH(xrdbcolors); i++) {
+			snprintf(name, sizeof name, "dwm.%s", xrdbcolors[i].name);
+			if (!XrmGetResource(db, name, name, &rtype, &v) || !v.addr
+			    || v.addr[0] != '#' || strlen(v.addr) != 7)
+				continue;
+			for (j = 1; j < 7 && isxdigit((unsigned char)v.addr[j]); j++);
+			if (j == 7)
+				memcpy(xrdbcolors[i].dst, v.addr, 8);
+		}
+		XrmDestroyDatabase(db);
+	}
+	XFree(p);
+}
+
+void
+reloadcolors(void)
+{
+	Clr **old = scheme;
+	Monitor *m;
+	Client *c;
+	int i;
+
+	loadxrdb();
+	scheme = ecalloc(LENGTH(colors) + 1, sizeof(Clr *));
+	scheme[LENGTH(colors)] = drw_scm_create(drw, (const char **)colors[0], alphas[0], 3);
+	for (i = 0; i < LENGTH(colors); i++)
+		scheme[i] = drw_scm_create(drw, (const char **)colors[i], alphas[i], 3);
+	for (i = 0; i < LENGTH(colors) + 1; i++)
+		drw_scm_free(drw, old[i], 3);
+	free(old);
+	for (m = mons; m; m = m->next)
+		for (c = m->clients; c; c = c->next)
+			XSetWindowBorder(dpy, c->win,
+				scheme[c == selmon->sel ? SchemeSel : SchemeNorm][ColBorder].pixel);
+	drawbars();
+}
+
+void
 updatestatus(void)
 {
+	char cmd[16];
+
+	if (gettextprop(root, XA_WM_NAME, cmd, sizeof cmd) && !strcmp(cmd, "navi:reload")) {
+		reloadcolors();
+		XStoreName(dpy, root, stext);
+		return;
+	}
 	if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext))) {
 		strcpy(stext, "dwm-"VERSION);
 		statusw = TEXTW(stext) - lrpad + 2;

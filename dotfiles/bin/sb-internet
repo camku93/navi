@@ -1,7 +1,7 @@
 #!/bin/bash
 
 case $BLOCK_BUTTON in
-	1) "$TERMINAL" -e navi-dusk nmtui; pkill -RTMIN+4 dwmblocks ;;
+	1) "$TERMINAL" -e navi-colors nmtui; pkill -RTMIN+4 dwmblocks ;;
 	3) notify-send "Internet module" "- Click to connect
 - Shows ethernet icon when wired, Connected when on wifi,
   Disconnected when neither is active." ;;

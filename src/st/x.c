@@ -1,5 +1,6 @@
 /* See LICENSE for license details. */
 #include <errno.h>
+#include <ctype.h>
 #include <math.h>
 #include <limits.h>
 #include <locale.h>
@@ -2113,6 +2114,60 @@ resize(XEvent *e)
 	cresize(e->xconfigure.width, e->xconfigure.height);
 }
 
+static volatile sig_atomic_t themereload;
+
+static void
+themesignal(int sig)
+{
+	themereload = 1;
+}
+
+static int
+validcolor(const char *c)
+{
+	int i;
+
+	if (!c || c[0] != '#' || strlen(c) != 7)
+		return 0;
+	for (i = 1; i < 7; i++)
+		if (!isxdigit((unsigned char)c[i]))
+			return 0;
+	return 1;
+}
+
+static void
+reloadtheme(void)
+{
+	Atom type;
+	int fmt, i;
+	unsigned long n, after;
+	unsigned char *p = NULL;
+	char name[32], *rtype;
+	XrmDatabase db;
+	XrmValue v;
+	static const struct { const char *name; int idx; } extra[] = {
+		{ "background", 258 }, { "foreground", 259 }, { "cursorColor", 256 },
+	};
+
+	if (XGetWindowProperty(xw.dpy, DefaultRootWindow(xw.dpy), XA_RESOURCE_MANAGER,
+	    0, 1 << 20, False, XA_STRING, &type, &fmt, &n, &after, &p) != Success || !p)
+		return;
+	if ((db = XrmGetStringDatabase((char *)p))) {
+		for (i = 0; i < 16 + (int)LEN(extra); i++) {
+			if (i < 16)
+				snprintf(name, sizeof name, "st.color%d", i);
+			else
+				snprintf(name, sizeof name, "st.%s", extra[i - 16].name);
+			if (XrmGetResource(db, name, name, &rtype, &v) && validcolor(v.addr))
+				colorname[i < 16 ? i : extra[i - 16].idx] = xstrdup(v.addr);
+		}
+		XrmDestroyDatabase(db);
+	}
+	XFree(p);
+	xloadcols();
+	redraw();
+}
+
 void
 run(void)
 {
@@ -2143,6 +2198,10 @@ run(void)
 	cresize(w, h);
 
 	for (timeout = -1, drawing = 0, lastblink = (struct timespec){0};;) {
+		if (themereload) {
+			themereload = 0;
+			reloadtheme();
+		}
 		FD_ZERO(&rfd);
 		FD_SET(ttyfd, &rfd);
 		FD_SET(xfd, &rfd);
@@ -2283,6 +2342,8 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
+	struct sigaction sa;
+
 	xw.l = xw.t = 0;
 	xw.isfixed = False;
 	xsetcursor(cursorshape);
@@ -2347,6 +2408,10 @@ run:
 	if(!(xw.dpy = XOpenDisplay(NULL)))
 		die("Can't open display\n");
 
+	sa.sa_handler = themesignal;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGUSR1, &sa, NULL);
 	config_init();
 	cols = MAX(cols, 1);
 	rows = MAX(rows, 1);

@@ -189,7 +189,7 @@ install_dotfiles() {
 		f=${f#"$NAVI_DIR"/}
 		dst=$(navi_dest "$f") || continue
 		install_file "$NAVI_DIR/$f" "$dst"
-	done < <(find "$NAVI_DIR/dotfiles" "$NAVI_DIR/docs" "$NAVI_DIR/wallpapers" -type f -print0)
+	done < <(find "$NAVI_DIR/dotfiles" "$NAVI_DIR/docs" "$NAVI_DIR/wallpapers" "$NAVI_DIR/themes" -type f -print0)
 	chmod +x "$HOME/.xinitrc"
 
 	if cmp -s "$HOME/.config/mimeapps.list" "$NAVI_DIR/dotfiles/config/navi-mimeapps.list"; then
@@ -345,4 +345,5 @@ install_system_files
 set_shell
 setup_autostart
 record_install
+"$HOME/.local/bin/navi-theme" --login
 finish

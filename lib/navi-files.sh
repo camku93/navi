@@ -20,6 +20,8 @@ navi_dest() {
 	dotfiles/bin/*) printf '%s' "$HOME/.local/bin/${1#dotfiles/bin/}" ;;
 	dotfiles/applications/*) printf '%s' "$HOME/.local/share/applications/${1#dotfiles/applications/}" ;;
 	dotfiles/home/.xinitrc | dotfiles/home/.Xresources) printf '%s' "$HOME/${1#dotfiles/home/}" ;;
+	themes/*) printf '%s' "$HOME/.local/share/navi/themes/${1#themes/}" ;;
+	docs/navi-theme.1) printf '%s' "$HOME/.local/share/man/man1/navi-theme.1" ;;
 	docs/KEYBINDS.pdf) printf '%s' "$HOME/Documents/Navi-Keybinds.pdf" ;;
 	wallpapers/wallpaper.jpg) printf '%s' "$HOME/Pictures/Wallpapers/wallpaper.jpg" ;;
 	src/dwm/* | src/dwmblocks/* | src/st/* | src/slock/*) printf '%s' "$HOME/.local/src/${1#src/}" ;;

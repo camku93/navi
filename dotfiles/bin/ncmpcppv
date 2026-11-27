@@ -6,6 +6,17 @@ cache="${XDG_RUNTIME_DIR:-/tmp}/ncmpcppv-cover-$(id -u)"
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
+rgb() {
+	local c=${1#\#}
+	printf '\033[38;2;%d;%d;%dm' "0x${c:0:2}" "0x${c:2:2}" "0x${c:4:2}"
+}
+
+theme="${XDG_CONFIG_HOME:-$HOME/.config}/navi/theme/colors.sh"
+# shellcheck source=/dev/null
+[ -f "$theme" ] && . "$theme"
+note_color=$(rgb "${navi_accent:-#b8567f}")
+info_color=$(rgb "${navi_dim:-#8b9ab8}")
+
 pane_loop() {
 	draw=$1
 	trap '"$draw"' WINCH
@@ -23,7 +34,7 @@ draw_note() {
 	top=$(( (rows - 8) / 2 )) left=$(( (cols - 18) / 2 ))
 	[ "$top" -lt 0 ] && top=0
 	[ "$left" -lt 0 ] && left=0
-	printf '\033[2J\033[38;2;184;86;127m'
+	printf '\033[2J%s' "$note_color"
 	while IFS= read -r line; do
 		printf '\033[%d;%dH%s' $((top + i + 1)) $((left + 1)) "$line"
 		i=$((i + 1))
@@ -115,7 +126,7 @@ cava_feed() {
 draw_nofeed() {
 	local cols
 	cols=$(tput cols)
-	printf '\033[2J\033[H\033[38;2;139;154;184m'
+	printf '\033[2J\033[H%s' "$info_color"
 	printf 'Visualizer off. MPD needs a fifo output for it, see the ncmpcppv README.\n' | fold -s -w "$cols"
 	printf '\033[0m'
 }

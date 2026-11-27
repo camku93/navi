@@ -1,8 +1,2 @@
 st.alpha: 0.65
-st.background: #1a1c24
 st.font: DejaVuSansM Nerd Font Mono:size=13.5:antialias=true:autohint=true
-st.cursorColor: #d9b3c0
-Nsxiv.window.background: #1a1c24
-Nsxiv.window.foreground: #e8eaf0
-Nsxiv.bar.background: #1a1c24
-Nsxiv.bar.foreground: #e8eaf0

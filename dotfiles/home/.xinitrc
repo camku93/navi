@@ -10,6 +10,7 @@ if [ -f "$HOME/.config/navi/use-zsh" ] && command -v zsh >/dev/null 2>&1; then
 	export ZDOTDIR="$HOME/.config/navi/zsh"
 fi
 [ -f "$HOME/.Xresources" ] && xrdb -merge "$HOME/.Xresources"
+navi-theme --login
 eval "$(navi-scale --apply)"
 xsettingsd -c "$HOME/.config/navi/xsettingsd.conf" &
 (while ! pgrep -x dwm >/dev/null; do sleep 0.1; done; sleep 0.5; dwmblocks) &

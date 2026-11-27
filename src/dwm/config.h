@@ -16,20 +16,27 @@ static const char *fonts[]          = {
 	"JetBrainsMono Nerd Font Propo:size=10",
 	"NotoColorEmoji:size=7.5:antialias=true:autohint=true"
 };
-static const char col_gray1[]       = "#0d0d12";
-static const char col_gray2[]       = "#6e3a52";
-static const char col_gray3[]       = "#e8eaf0";
-static const char col_accent[]      = "#b8567f";
+static char normfg[]     = "#e8eaf0";
+static char normbg[]     = "#0d0d12";
+static char normborder[] = "#6e3a52";
+static char selfg[]      = "#b8567f";
+static char selbg[]      = "#0d0d12";
+static char selborder[]  = "#b8567f";
 static const unsigned int baralpha = 0xbf;     /* bar background opacity, 0x00 to 0xff */
 static const unsigned int alphas[][3] = {
 	/*               fg      bg        border */
 	[SchemeNorm] = { OPAQUE, baralpha, OPAQUE },
 	[SchemeSel]  = { OPAQUE, baralpha, OPAQUE },
 };
-static const char *colors[][3]      = {
-	/*               fg         bg         border   */
-	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-	[SchemeSel]  = { col_accent, col_gray1, col_accent  },
+static char *colors[][3]      = {
+	/*               fg      bg      border   */
+	[SchemeNorm] = { normfg, normbg, normborder },
+	[SchemeSel]  = { selfg,  selbg,  selborder  },
+};
+/* read from dwm.<name> in X resources, set by navi-theme */
+static const XrdbColor xrdbcolors[] = {
+	{ "normfg", normfg }, { "normbg", normbg }, { "normborder", normborder },
+	{ "selfg",  selfg },  { "selbg",  selbg },  { "selborder",  selborder },
 };
 
 /* tagging */
@@ -139,11 +146,11 @@ static const Key keys[] = {
 	{ Mod4Mask,			XK_c,	   spawn,          SHCMD("st -e nvim") },
 	{ Mod4Mask,			XK_w,	   spawn,	   SHCMD("librewolf") },
 	{ Mod4Mask, 			XK_r,      spawn,          SHCMD("st -e lfv") },
-	{ Mod4Mask,			XK_s,	   spawn,	   SHCMD("st -e navi-dusk htop") },
+	{ Mod4Mask,			XK_s,	   spawn,	   SHCMD("st -e navi-colors htop") },
 	{ Mod4Mask,			XK_a, 	   spawn,	   SHCMD("st -e qalc") },
 	{ Mod4Mask,			XK_u,	   spawn,	   SHCMD("st -e sys-update") },
         { Mod4Mask|ShiftMask,           XK_u,      spawn,        SHCMD("st -e navi-update") },
-	{ Mod4Mask,			XK_n,	   spawn,          SHCMD("st -e navi-dusk nmtui") },
+	{ Mod4Mask,			XK_n,	   spawn,          SHCMD("st -e navi-colors nmtui") },
 	{ Mod4Mask|ShiftMask,		XK_n,	   spawn,	   SHCMD("st -e newsboat") },
 	{ Mod4Mask|ShiftMask,		XK_p,	   spawn,	   SHCMD("system-config-printer") },
 	TAGKEYS(                        XK_1,                      0)

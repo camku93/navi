@@ -1,3 +1,5 @@
+@import "navi-theme.rasi"
+
 configuration {
 	font: "JetBrainsMono Nerd Font Propo 11";
 	show-icons: false;
@@ -9,9 +11,9 @@ window {
 	location: center;
 	anchor: center;
 	width: 44em;
-	background-color: #0d0d12bf;
+	background-color: @navi-bg;
 	border: 2px;
-	border-color: #b8567f;
+	border-color: @navi-accent;
 	border-radius: 0px;
 	padding: 0.8em;
 }
@@ -23,8 +25,8 @@ mainbox {
 }
 
 inputbar {
-	background-color: #4d2735;
-	text-color: #e8eaf0;
+	background-color: @navi-muted;
+	text-color: @navi-text;
 	padding: 0.55em;
 	spacing: 0.55em;
 	children: [prompt, entry];
@@ -32,14 +34,14 @@ inputbar {
 
 prompt {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 }
 
 entry {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 	placeholder: "Search...";
-	placeholder-color: #8b9ab8;
+	placeholder-color: @navi-dim;
 }
 
 listview {
@@ -51,19 +53,19 @@ listview {
 
 element normal.normal {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 	padding: 0.4em;
 }
 
 element alternate.normal {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 	padding: 0.4em;
 }
 
 element selected.normal {
-	background-color: #b8567f;
-	text-color: #e8eaf0;
+	background-color: @navi-selected;
+	text-color: @navi-selected-text;
 	padding: 0.4em;
 }
 
@@ -79,5 +81,5 @@ error-message {
 
 textbox {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 }

@@ -1,0 +1,24 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# shellcheck source=/dev/null
+[ -f "$HOME/.config/navi/theme/colors.sh" ] && . "$HOME/.config/navi/theme/colors.sh"
+s=${navi_surface:-#1a1c24} a=${navi_accent:-#b8567f} o=${navi_soft:-#d9b3c0}
+c=${navi_cool:-#5c6b8a} d=${navi_dim:-#8b9ab8} t=${navi_text:-#e8eaf0}
+
+for p in "0:$s" "2:$a" "3:$o" "4:$c" "5:$a" "6:$d" "7:$t" \
+	"8:$c" "10:$o" "11:$o" "12:$d" "13:$o" "14:$d" "15:$t"; do
+	printf '\033]4;%s;%s\007' "${p%%:*}" "${p#*:}"
+done
+
+export NEWT_COLORS='root=white,black border=magenta,black window=white,black shadow=black,black
+title=magenta,black button=white,gray actbutton=white,magenta compactbutton=white,black
+checkbox=white,black actcheckbox=white,magenta entry=white,gray disentry=lightgray,black
+label=white,black listbox=white,black actlistbox=white,magenta sellistbox=white,gray
+actsellistbox=white,magenta textbox=white,black acttextbox=white,magenta helpline=lightgray,black
+roottext=lightgray,black emptyscale=,gray fullscale=,magenta'
+
+[ "${navi_onaccent:-}" = "${navi_base:-}" ] && [ -n "${navi_base:-}" ] &&
+	NEWT_COLORS=$(printf '%s' "$NEWT_COLORS" | sed 's/white,magenta/black,magenta/g')
+
+exec "$@"

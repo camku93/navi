@@ -49,11 +49,16 @@ built() {
 	if [ -n "$rest" ]; then printf '%s\n' "$rest" > "$PENDING"; else rm -f "$PENDING"; fi
 }
 
+themed() {
+	"$REPO/dotfiles/bin/navi-theme" --filter "$1" 2>/dev/null || cat
+}
+
 put() {
 	local new=$1 dst=$2
+	# shellcheck disable=SC2094
 	case $dst in
 	/etc/*) sudo install -Dm644 "$new" "$dst" ;;
-	*) mkdir -p "$(dirname "$dst")" && cp -p "$new" "$dst" ;;
+	*) mkdir -p "$(dirname "$dst")" && cp -p "$new" "$dst" && themed "$dst" < "$new" > "$dst" ;;
 	esac
 }
 
@@ -62,10 +67,10 @@ update_file() {
 	dst=$(navi_dest "$path") || return 0
 	new="$REPO/$path"
 	[ -f "$new" ] || return 0
-	[ -e "$dst" ] && cmp -s "$new" "$dst" && return 0
+	[ -e "$dst" ] && themed "$dst" < "$new" | cmp -s - "$dst" && return 0
 
 	if [ -e "$dst" ]; then
-		if ! git -C "$REPO" show "$BASE:$path" 2>/dev/null | cmp -s - "$dst"; then
+		if ! git -C "$REPO" show "$BASE:$path" 2>/dev/null | themed "$dst" | cmp -s - "$dst"; then
 			edited=1
 		fi
 		printf '\n%s changed in Navi.' "$(show "$dst")"
@@ -219,6 +224,8 @@ while IFS=$'\t' read -r st a b; do
 done < <(git -C "$REPO" diff --name-status -M "$BASE" "$TARGET")
 
 [ ${#REBUILD[@]} -gt 0 ] && rebuild
+
+[ -x "$HOME/.local/bin/navi-theme" ] && "$HOME/.local/bin/navi-theme" --login
 
 git -C "$REPO" diff --quiet "$BASE" "$TARGET" -- install.sh \
 	|| NOTES+=("The installer changed too. Anything it sets up outside your files (services, shell, packages) is only applied by running it again.")

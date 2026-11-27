@@ -1,3 +1,5 @@
+@import "navi-theme.rasi"
+
 configuration {
 	font: "JetBrainsMono Nerd Font Propo 11";
 	hover-select: true;
@@ -9,9 +11,9 @@ window {
 	location: northeast;
 	anchor: northeast;
 	width: 11em;
-	background-color: #0d0d12bf;
+	background-color: @navi-bg;
 	border: 2px;
-	border-color: #b8567f;
+	border-color: @navi-accent;
 	border-radius: 0px;
 	padding: 0.5em;
 }
@@ -29,21 +31,21 @@ listview {
 
 element normal.normal {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 	padding: 0.4em;
 	border-radius: 0px;
 }
 
 element alternate.normal {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 	padding: 0.4em;
 	border-radius: 0px;
 }
 
 element selected.normal {
-	background-color: #b8567f;
-	text-color: #e8eaf0;
+	background-color: @navi-selected;
+	text-color: @navi-selected-text;
 	padding: 0.4em;
 	border-radius: 0px;
 }
@@ -64,7 +66,7 @@ error-message {
 
 textbox {
 	background-color: transparent;
-	text-color: #e8eaf0;
+	text-color: @navi-text;
 }
 
 @import "navi-position.rasi"

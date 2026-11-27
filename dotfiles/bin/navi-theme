@@ -1,0 +1,281 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# shellcheck disable=SC2154
+
+set -u
+
+OUT="$HOME/.config/navi/theme"
+DIRS=("$HOME/.config/navi/themes" "$HOME/.local/share/navi/themes")
+[ -f "$HOME/.config/navi/repo" ] && DIRS+=("$(cat "$HOME/.config/navi/repo")/themes")
+ROLES=(base surface text dim accent soft cool muted border hint comment warn hilite tagfg tagbg)
+
+usage() {
+	cat <<EOF
+Usage: navi-theme [name]       switch to a theme
+       navi-theme              list themes
+       navi-theme -m           pick a theme from a menu
+       navi-theme -r           apply the current theme again
+EOF
+}
+
+theme_file() {
+	local d
+	for d in "${DIRS[@]}"; do
+		[ -f "$d/$1" ] && { printf '%s' "$d/$1"; return 0; }
+	done
+	return 1
+}
+
+list_themes() {
+	local d f
+	for d in "${DIRS[@]}"; do
+		for f in "$d"/*; do [ -f "$f" ] && printf '%s\n' "${f##*/}"; done
+	done | sort -u
+}
+
+current() { cat "$OUT/current" 2>/dev/null || printf 'navi'; }
+
+hexok() { [[ $1 =~ ^#[0-9a-fA-F]{6}$ ]]; }
+
+load() {
+	local file r i
+	file=$(theme_file "$1") || { printf 'navi-theme: no theme called %s\n' "$1" >&2; return 1; }
+	for r in "${ROLES[@]}" visualizer media; do unset "$r"; done
+	for i in $(seq 0 15); do unset "term$i"; done
+	# shellcheck disable=SC1090
+	. "$file" || return 1
+	: "${tagfg:=${accent:-}}" "${tagbg:=${base:-}}" "${media:=${soft:-}}"
+	for r in "${ROLES[@]}"; do
+		hexok "${!r:-}" || { printf 'navi-theme: %s: %s is missing or not a #rrggbb color\n' "$1" "$r" >&2; return 1; }
+	done
+	for i in $(seq 0 15); do
+		r=term$i
+		hexok "${!r:-}" || { printf 'navi-theme: %s: %s is missing or not a #rrggbb color\n' "$1" "$r" >&2; return 1; }
+	done
+	THEME=$1
+}
+
+lum() {
+	awk -v h="${1#\#}" 'function c(x) { x = x / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ^ 2.4 }
+	BEGIN { printf "%f", 0.2126 * c(strtonum("0x" substr(h, 1, 2))) + 0.7152 * c(strtonum("0x" substr(h, 3, 2))) + 0.0722 * c(strtonum("0x" substr(h, 5, 2))) }'
+}
+
+readable_on() {
+	awk -v bg="$(lum "$1")" -v t="$(lum "$text")" -v b="$(lum "$base")" '
+	function cr(x, y) { return x > y ? (x + 0.05) / (y + 0.05) : (y + 0.05) / (x + 0.05) }
+	BEGIN { exit !(cr(t, bg) >= 3 || cr(t, bg) >= cr(b, bg)) }' \
+		&& printf '%s' "$text" || printf '%s' "$base"
+}
+
+rgb() { printf '38;2;%d;%d;%d' "0x${1:1:2}" "0x${1:3:2}" "0x${1:5:2}"; }
+
+filter_cava() {
+	sed -E "s/^(gradient_color_1 *= *).*/\1'$cool'/
+		s/^(gradient_color_2 *= *).*/\1'$accent'/
+		s/^(gradient_color_3 *= *).*/\1'$text'/"
+}
+
+filter_fastfetch() {
+	sed -E "s/(\"(title|yellow)\": \")38;2;[0-9;]+\"/\1$(rgb "$accent")\"/
+		s/(\"(keys|green)\": \")38;2;[0-9;]+\"/\1$(rgb "$dim")\"/
+		s/(\"(separator|outputColor)\": \")38;2;[0-9;]+\"/\1$(rgb "$cool")\"/
+		s/(\"output\": \")38;2;[0-9;]+\"/\1$(rgb "$text")\"/
+		s/(\"red\": \")38;2;[0-9;]+\"/\1$(rgb "$warn")\"/"
+}
+
+xterm256() {
+	awk -v h="${1#\#}" 'function v(i) { return i ? 55 + 40 * i : 0 }
+	function q(x) { return x < 48 ? 0 : x < 115 ? 1 : int((x - 35) / 40) }
+	BEGIN {
+		r = strtonum("0x" substr(h, 1, 2)); g = strtonum("0x" substr(h, 3, 2)); b = strtonum("0x" substr(h, 5, 2))
+		cr = q(r); cg = q(g); cb = q(b)
+		dc = (v(cr) - r) ^ 2 + (v(cg) - g) ^ 2 + (v(cb) - b) ^ 2
+		y = int(((r + g + b) / 3 - 8) / 10 + 0.5); y = y < 0 ? 0 : y > 23 ? 23 : y; gv = 8 + 10 * y
+		dg = (gv - r) ^ 2 + (gv - g) ^ 2 + (gv - b) ^ 2
+		print (dg < dc ? 232 + y : 16 + 36 * cr + 6 * cg + cb)
+	}'
+}
+
+mix() {
+	printf '#%02x%02x%02x' $(( (0x${1:1:2} + 0x${2:1:2}) / 2 )) $(( (0x${1:3:2} + 0x${2:3:2}) / 2 )) $(( (0x${1:5:2} + 0x${2:5:2}) / 2 ))
+}
+
+filter_lfcolors() {
+	sed -E "s/^di 38;2;[0-9;]+/di $(rgb "$accent")/
+		s/^fi 38;2;[0-9;]+/fi $(rgb "$text")/
+		s/^ln 38;2;[0-9;]+/ln $(rgb "$cool")/
+		s/^ex 38;2;[0-9;]+/ex $(rgb "$dim")/
+		s/^(\*\.(jpg|png|mp3|mp4)) 38;2;[0-9;]+/\1 $(rgb "$media")/
+		s/^(\*\.(txt|md)) 38;2;[0-9;]+/\1 $(rgb "$text")/"
+}
+
+filter_ncmpcpp() {
+	local vis=${visualizer:-} c
+	if [ -z "$vis" ]; then
+		for c in "$cool" "$(mix "$cool" "$accent")" "$accent" "$accent" "$(mix "$accent" "$soft")" "$soft" "$(mix "$soft" "$text")" "$text"; do
+			vis="${vis:+$vis, }$(xterm256 "$c")"
+		done
+	fi
+	sed -E "s/^(visualizer_color *= *).*/\1$vis/"
+}
+
+filter_for() {
+	case $1 in
+	*/cava/config) printf 'filter_cava' ;;
+	*/fastfetch/config.jsonc) printf 'filter_fastfetch' ;;
+	*/ncmpcpp/config) printf 'filter_ncmpcpp' ;;
+	*/lf/colors) printf 'filter_lfcolors' ;;
+	*) return 1 ;;
+	esac
+}
+
+edit_in_place() {
+	local f=$1 fn tmp
+	[ -f "$f" ] || return 0
+	fn=$(filter_for "$f") || return 0
+	tmp=$(mktemp) || return 1
+	if "$fn" < "$f" > "$tmp" && ! cmp -s "$tmp" "$f"; then
+		cat "$tmp" > "$f"
+	fi
+	rm -f "$tmp"
+}
+
+write_files() {
+	local r i
+	mkdir -p "$OUT" "$HOME/.config/dunst/dunstrc.d" "$HOME/.config/rofi"
+
+	{
+		printf "navi_theme='%s'\n" "$THEME"
+		for r in "${ROLES[@]}"; do printf "navi_%s='%s'\n" "$r" "${!r}"; done
+		for i in $(seq 0 15); do r=term$i; printf "navi_%s='%s'\n" "$r" "${!r}"; done
+		printf "navi_onaccent='%s'\n" "$(readable_on "$accent")"
+	} > "$OUT/colors.sh"
+
+	{
+		printf 'st.background: %s\nst.foreground: %s\nst.cursorColor: %s\n' "$surface" "$text" "$soft"
+		for i in $(seq 0 15); do r=term$i; printf 'st.color%s: %s\n' "$i" "${!r}"; done
+		printf 'dwm.normfg: %s\ndwm.normbg: %s\ndwm.normborder: %s\n' "$text" "$base" "$border"
+		printf 'dwm.selfg: %s\ndwm.selbg: %s\ndwm.selborder: %s\n' "$tagfg" "$tagbg" "$accent"
+		printf 'slock.input: %s\nslock.failed: %s\nslock.text: %s\n' "$accent" "$warn" "$text"
+		printf 'Nsxiv.window.background: %s\nNsxiv.window.foreground: %s\n' "$surface" "$text"
+		printf 'Nsxiv.bar.background: %s\nNsxiv.bar.foreground: %s\n' "$surface" "$text"
+	} > "$OUT/Xresources"
+
+	cat > "$HOME/.config/dunst/dunstrc.d/navi-theme.conf" <<EOF
+[global]
+    format = "<span foreground='$accent'><b>%s</b></span>\n%b"
+
+[urgency_low]
+    background = "${base}bf"
+    foreground = "$text"
+    frame_color = "$muted"
+
+[urgency_normal]
+    background = "${base}bf"
+    foreground = "$text"
+    frame_color = "$muted"
+
+[urgency_critical]
+    background = "${base}bf"
+    foreground = "$text"
+    frame_color = "$accent"
+EOF
+
+	local selbg=$accent
+	[ "$tagbg" != "$base" ] && selbg=$tagbg
+	cat > "$HOME/.config/rofi/navi-theme.rasi" <<EOF
+* {
+	navi-bg: ${base}bf;
+	navi-text: $text;
+	navi-dim: $dim;
+	navi-accent: $accent;
+	navi-muted: $muted;
+	navi-selected: $selbg;
+	navi-selected-text: $(readable_on "$selbg");
+}
+EOF
+
+	cat > "$OUT/zathurarc" <<EOF
+set highlight-color "rgba($((0x${accent:1:2})),$((0x${accent:3:2})),$((0x${accent:5:2})),0.5)"
+set highlight-active-color "rgba($((0x${hilite:1:2})),$((0x${hilite:3:2})),$((0x${hilite:5:2})),0.5)"
+set default-bg "$surface"
+set default-fg "$text"
+set statusbar-bg "$surface"
+set statusbar-fg "$text"
+set inputbar-bg "$surface"
+set inputbar-fg "$text"
+EOF
+
+	edit_in_place "$HOME/.config/cava/config"
+	edit_in_place "$HOME/.config/fastfetch/config.jsonc"
+	edit_in_place "$HOME/.config/ncmpcpp/config"
+	edit_in_place "$HOME/.config/lf/colors"
+
+	printf '%s\n' "$THEME" > "$OUT/current"
+	date +%s%N > "$OUT/stamp"
+}
+
+catches_usr1() {
+	local mask
+	mask=$(awk '/^SigCgt:/ {print $2}' "/proc/$1/status" 2>/dev/null) || return 1
+	[ -n "$mask" ] && (( 0x$mask & 0x200 ))
+}
+
+reload() {
+	local pid
+	[ -n "${DISPLAY:-}" ] || return 0
+	xrdb -merge "$OUT/Xresources"
+	if pgrep -x dwm >/dev/null; then
+		pkill -x dwmblocks
+		for _ in $(seq 20); do pgrep -x dwmblocks >/dev/null || break; sleep 0.1; done
+		xsetroot -name navi:reload
+		sleep 0.3
+		command -v dwmblocks >/dev/null && setsid -f dwmblocks >/dev/null 2>&1
+	fi
+	for pid in $(pgrep -x st); do
+		catches_usr1 "$pid" && kill -USR1 "$pid"
+	done
+	if pgrep -x dunst >/dev/null && ! dunstctl reload >/dev/null 2>&1; then
+		pkill -x dunst
+		for _ in $(seq 20); do pgrep -x dunst >/dev/null || break; sleep 0.1; done
+		setsid -f dunst >/dev/null 2>&1
+	fi
+	return 0
+}
+
+menu() {
+	local cur pick
+	cur=$(current)
+	pick=$(list_themes | rofi -dmenu -i -no-custom -p "Theme" \
+		-select "$cur" -theme ~/.config/rofi/menu.rasi) || exit 0
+	[ -n "$pick" ] && apply "$pick"
+}
+
+apply() {
+	load "$1" || exit 1
+	write_files
+	reload
+}
+
+case ${1:-} in
+"")
+	cur=$(current)
+	list_themes | while read -r t; do
+		[ "$t" = "$cur" ] && printf '* %s\n' "$t" || printf '  %s\n' "$t"
+	done ;;
+-h | --help) usage ;;
+-m | --menu) menu ;;
+-r | --reapply) apply "$(current)" ;;
+--login)
+	load "$(current)" || load navi || exit 1
+	write_files
+	[ -n "${DISPLAY:-}" ] && xrdb -merge "$OUT/Xresources"
+	exit 0 ;;
+--filter)
+	[ $# -eq 2 ] || { usage >&2; exit 1; }
+	fn=$(filter_for "$2") || exec cat
+	load "$(current)" 2>/dev/null || load navi 2>/dev/null || exec cat
+	"$fn" ;;
+-*) usage >&2; exit 1 ;;
+*) apply "$1" ;;
+esac

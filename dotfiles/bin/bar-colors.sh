@@ -1,8 +1,10 @@
 #!/bin/sh
 
-BAR_TEXT="#e8eaf0"
-BAR_ACCENT="#b8567f"
-BAR_MUTED="#4d2735"
+# shellcheck source=/dev/null
+[ -f "$HOME/.config/navi/theme/colors.sh" ] && . "$HOME/.config/navi/theme/colors.sh"
+BAR_TEXT=${navi_text:-#e8eaf0}
+BAR_ACCENT=${navi_accent:-#b8567f}
+BAR_MUTED=${navi_muted:-#4d2735}
 
 bar_block() {
 	printf '^c%s^%s^d^' "$BAR_ACCENT" "$1"

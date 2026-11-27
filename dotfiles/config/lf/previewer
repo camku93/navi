@@ -1,6 +1,7 @@
 #!/bin/sh
 # Inspired by lfimg: https://github.com/thimc/lfimg
 file="$1"
+[ -f "$HOME/.config/navi/theme/colors.sh" ] && . "$HOME/.config/navi/theme/colors.sh"
 w="$2"
 h="$3"
 x="$4"
@@ -58,10 +59,15 @@ firstimage() {
 	image "$t.img"
 }
 
+hexrgb() {
+	printf '%d;%d;%d' "0x$(printf %s "$1" | cut -c2-3)" "0x$(printf %s "$1" | cut -c4-5)" "0x$(printf %s "$1" | cut -c6-7)"
+}
+
 audio() {
+	label=$(hexrgb "${navi_dim:-#8b9ab8}")
 	info=$(ffprobe -v quiet -of default=noprint_wrappers=1 \
 		-show_entries format=duration,bit_rate:format_tags "$file" 2>/dev/null |
-		awk '
+		awk -v label="$label" '
 		{
 			k = tolower($0); sub(/=.*/, "", k)
 			v = $0; sub(/^[^=]*=/, "", v)
@@ -69,7 +75,7 @@ audio() {
 			else if (k == "duration") d = v
 			else if (k == "bit_rate") b = v
 		}
-		function row(l, v) { if (v != "") printf "\033[38;2;139;154;184m%-8s\033[0m %s\n", l, v }
+		function row(l, v) { if (v != "") printf "\033[38;2;%sm%-8s\033[0m %s\n", label, l, v }
 		END {
 			row("Title", t["title"]); row("Artist", t["artist"])
 			if (t["album_artist"] != t["artist"]) row("Album by", t["album_artist"])
@@ -166,7 +172,7 @@ case "$mimetype" in
 		if [ ! -s "$t.png" ]; then
 			im=convert
 			have magick && im=magick
-			"$im" -size 1000x800 xc:'#0d0d12' -fill '#e8eaf0' -font "$file" \
+			"$im" -size 1000x800 xc:"${navi_base:-#0d0d12}" -fill "${navi_text:-#e8eaf0}" -font "$file" \
 				-pointsize 64 -annotate +40+110 'ABCDEFGHIJKLM' \
 				-annotate +40+200 'NOPQRSTUVWXYZ' \
 				-annotate +40+290 'abcdefghijklm' \
