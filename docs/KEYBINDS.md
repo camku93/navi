@@ -101,9 +101,11 @@
 
 | Key | Action |
 | --- | --- |
-| Alt+c / Alt+Shift+c | Copy selection to clipboard |
-| Alt+v / Alt+Shift+v | Paste from clipboard |
+| Ctrl+Shift+c / Alt+c | Copy selection to clipboard |
+| Ctrl+Shift+v / Alt+v | Paste from clipboard |
 | Shift+Insert | Paste |
+| Shift+click | Select from last click to here |
+| Hold click + scroll | Keep selecting while scrolling |
 | Alt+Shift+l | Open URL under selection |
 | Alt+y | Copy URL under selection |
 | Alt+o | Copy last command output |
