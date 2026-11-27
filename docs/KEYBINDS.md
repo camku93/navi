@@ -79,8 +79,8 @@
 | Super+F2 | Config files menu |
 | Super+F3 | File search |
 | Super+F5 | Mount USB or disc |
-| Super+F6 | Unmount USB or disc |
-| Super+F7 | Display scale |
+| Super+Shift+F5 | Unmount USB or disc |
+| Super+F6 | Display scale |
 | Super+F9 | Toggle microphone recording |
 | Super+Shift+F9 | Toggle desktop audio recording |
 | Super+F10 | Toggle screen recording |
