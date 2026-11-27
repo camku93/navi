@@ -345,5 +345,6 @@ install_system_files
 set_shell
 setup_autostart
 record_install
+navi_add_path
 "$HOME/.local/bin/navi-theme" --login
 finish

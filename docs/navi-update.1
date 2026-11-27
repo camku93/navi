@@ -1,0 +1,42 @@
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.TH NAVI-UPDATE 1 2026-11-27 Navi "Navi Manual"
+.nh
+.SH NAME
+navi-update \- update Navi
+.SH SYNOPSIS
+.B navi-update
+.RB [ \-n ]
+.RB [ \-y ]
+.br
+.B navi-update \-\-undo
+.SH DESCRIPTION
+Updates Navi to the newest version on GitHub.
+It shows what will change and asks once before updating.
+Answer
+.B d
+to see every change first.
+.PP
+Files you have edited are kept.
+Navi's new version is saved next to them with
+.B .navi-new
+added to the name.
+.PP
+Programs like dwm and st are built before anything is changed.
+If a build fails, your files and programs are left as they were.
+.SH OPTIONS
+.TP
+.BR \-n ", " \-\-dry\-run
+Show what would change, then stop.
+.TP
+.BR \-y ", " \-\-yes
+Update without asking.
+.TP
+.B \-\-undo
+Put back the last update.
+.SH FILES
+.TP
+.I ~/.navi-backup-*/
+Files replaced by each update.
+.TP
+.I ~/.cache/navi-update/
+Build output, for when a build fails.
