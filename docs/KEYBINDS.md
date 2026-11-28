@@ -97,6 +97,7 @@
 | Key | Action |
 | --- | --- |
 | Super+Escape | Lock screen |
+| Super+BackSpace | Power menu |
 | Super+Shift+q | Log out |
 
 ## Copy and paste

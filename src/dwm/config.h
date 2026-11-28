@@ -128,6 +128,7 @@ static const Key keys[] = {
 	{ 0, XF86XK_AudioNext, spawn, SHCMD("mpc next") },
 	{ 0, XF86XK_AudioPrev, spawn, SHCMD("mpc prev") },
 	{ Mod4Mask,			XK_Escape, spawn,	   SHCMD("slock") },
+	{ Mod4Mask,			XK_BackSpace, spawn,	   SHCMD("power-menu") },
         { Mod4Mask,			XK_F2,     spawn,          SHCMD("dotfiles-menu") },
 	{ Mod4Mask, 			XK_F1,     spawn, 	   SHCMD("zathura ~/Documents/Navi-Keybinds.pdf") },	
 	{ Mod4Mask,			XK_F3,	   spawn,          SHCMD("file-search") },
