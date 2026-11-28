@@ -1,0 +1,176 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+set -u
+
+LIST="${XDG_CONFIG_HOME:-$HOME/.config}/mimeapps.list"
+DIRS=("${XDG_DATA_HOME:-$HOME/.local/share}/applications")
+IFS=: read -ra data <<< "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+for d in "${data[@]}" "$HOME/.local/share/flatpak/exports/share" /var/lib/flatpak/exports/share; do
+	[[ " ${DIRS[*]} " == *" ${d%/}/applications "* ]] || DIRS+=("${d%/}/applications")
+done
+MENU="$HOME/.config/rofi/menu.rasi"
+
+CATEGORIES=("Web browser" Videos Music Images "PDFs and books" "Text files")
+
+types() {
+	case $1 in
+	"Web browser") echo x-scheme-handler/http x-scheme-handler/https x-scheme-handler/about x-scheme-handler/unknown text/html ;;
+	Videos) echo video/mp4 video/x-matroska video/webm video/x-msvideo video/quicktime video/mpeg ;;
+	Music) echo audio/mpeg audio/flac audio/ogg audio/x-wav audio/mp4 audio/x-opus+ogg ;;
+	Images) echo image/png image/jpeg image/gif image/webp image/bmp image/tiff image/svg+xml ;;
+	"PDFs and books") echo application/pdf application/epub+zip image/vnd.djvu ;;
+	"Text files") echo text/plain text/markdown text/x-tex text/x-python text/x-csrc text/x-chdr application/x-shellscript application/json application/xml text/x-log ;;
+	*) return 1 ;;
+	esac
+}
+
+usage() {
+	cat <<EOF
+Usage: navi-defaults                    pick from a menu
+       navi-defaults list [category]    show categories, or a category's programs
+       navi-defaults set category id    open a category with a program
+       navi-defaults reset category     go back to Navi's choice
+Categories: ${CATEGORIES[*]}
+EOF
+}
+
+field() { sed -n "/^\[Desktop Entry\]/,/^\[/{s/^$1=//p}" "$2" | head -n 1; }
+
+shows_in_navi() {
+	local f=$1 only not
+	only=$(field OnlyShowIn "$f")
+	not=$(field NotShowIn "$f")
+	[ -n "$only" ] && [[ ";$only;" != *";navi;"* ]] && return 1
+	[[ ";$not;" == *";navi;"* ]] && return 1
+	[ "$(field Hidden "$f")" = true ] && return 1
+	return 0
+}
+
+programs() {
+	local cat=$1 d f id mime t seen=" " cur
+	cur=$(current "$cat")
+	for d in "${DIRS[@]}"; do
+		for f in "$d"/*.desktop; do
+			[ -f "$f" ] || continue
+			id=${f##*/}
+			[[ $seen == *" $id "* ]] && continue
+			seen+="$id "
+			shows_in_navi "$f" || continue
+			[ "$(field NoDisplay "$f")" = true ] && [ "$id" != "$cur" ] && continue
+			mime=";$(field MimeType "$f");"
+			for t in $(types "$cat"); do
+				if [[ $mime == *";$t;"* ]]; then
+					printf '%s\t%s\n' "$id" "$(field Name "$f")"
+					break
+				fi
+			done
+		done
+	done | sort -t $'\t' -k2,2f
+}
+
+current() {
+	local t
+	t=$(types "$1" | cut -d' ' -f1)
+	XDG_CURRENT_DESKTOP=navi xdg-mime query default "$t" 2>/dev/null
+}
+
+installed() {
+	local d
+	for d in "${DIRS[@]}"; do [ -f "$d/$1" ] && return 0; done
+	return 1
+}
+
+old_list_warning() {
+	local old="${XDG_CONFIG_HOME:-$HOME/.config}/navi-mimeapps.list"
+	[ -f "$old" ] || return 0
+	local msg="Your old ${old/#$HOME/\~} overrides these choices. Delete it to use them."
+	printf '%s\n' "$msg" >&2
+	command -v notify-send >/dev/null && notify-send -u critical "Default programs" "$msg" 2>/dev/null
+	return 0
+}
+
+valid() { types "$1" >/dev/null || { printf 'navi-defaults: no category called %s\n' "$1" >&2; exit 1; }; }
+
+set_default() {
+	local cat=$1 id=$2
+	valid "$cat"
+	[[ $id == *.desktop ]] || id="$id.desktop"
+	installed "$id" || { printf 'navi-defaults: %s is not installed\n' "${id%.desktop}" >&2; exit 1; }
+	# shellcheck disable=SC2046
+	xdg-mime default "$id" $(types "$cat") || exit 1
+}
+
+reset_default() {
+	local cat=$1 t pat=""
+	valid "$cat"
+	[ -f "$LIST" ] || return 0
+	for t in $(types "$cat"); do pat+="${pat:+|}${t//./\\.}"; done
+	pat=${pat//+/\\+}
+	awk -v pat="^($pat)=" '
+		/^\[/ { indef = ($0 == "[Default Applications]") }
+		!(indef && $0 ~ pat)' "$LIST" > "$LIST.tmp" && mv "$LIST.tmp" "$LIST"
+}
+
+label() {
+	local id=$1 name=$2 cur=$3 dup=$4
+	[ "$dup" -gt 1 ] && name="$name (${id%.desktop})"
+	[ "$id" = "$cur" ] && name="$name  (current)"
+	printf '%s' "$name"
+}
+
+menu() {
+	local cat line id name cur pick ids=() labels=() i n
+	cat=$(printf '%s\n' "${CATEGORIES[@]}" | rofi -dmenu -i -no-custom -p "Default for" -theme "$MENU") || exit 0
+	[ -n "$cat" ] || exit 0
+	cur=$(current "$cat")
+
+	while IFS=$'\t' read -r id name; do
+		ids+=("$id")
+		labels+=("$name")
+	done < <(programs "$cat")
+
+	{
+		for i in "${!ids[@]}"; do
+			n=0
+			for name in "${labels[@]}"; do [ "$name" = "${labels[$i]}" ] && n=$((n + 1)); done
+			label "${ids[$i]}" "${labels[$i]}" "$cur" "$n"
+			printf '\n'
+		done
+		printf "Navi's default\n"
+	} > "${TMPDIR:-/tmp}/navi-defaults.$$"
+
+	pick=$(rofi -dmenu -i -no-custom -format i -p "$cat" -theme "$MENU" \
+		-select "(current)" < "${TMPDIR:-/tmp}/navi-defaults.$$")
+	rm -f "${TMPDIR:-/tmp}/navi-defaults.$$"
+	[ -n "$pick" ] || exit 0
+
+	if [ "$pick" -ge "${#ids[@]}" ]; then
+		reset_default "$cat"
+		line="$cat open with Navi's default again"
+	else
+		set_default "$cat" "${ids[$pick]}"
+		line="$cat now open with ${labels[$pick]}"
+	fi
+	command -v notify-send >/dev/null && notify-send "Default programs" "$line" 2>/dev/null
+	old_list_warning
+}
+
+case ${1:-} in
+"") menu ;;
+list)
+	if [ $# -ge 2 ]; then
+		valid "$2"
+		cur=$(current "$2")
+		programs "$2" | while IFS=$'\t' read -r id name; do
+			[ "$id" = "$cur" ] && printf '* ' || printf '  '
+			printf '%s (%s)\n' "$name" "$id"
+		done
+	else
+		for c in "${CATEGORIES[@]}"; do printf '%s: %s\n' "$c" "$(current "$c")"; done
+	fi ;;
+set) [ $# -eq 3 ] || { usage >&2; exit 1; }; set_default "$2" "$3"; old_list_warning ;;
+reset) [ $# -eq 2 ] || { usage >&2; exit 1; }; reset_default "$2" ;;
+-h | --help) usage ;;
+*) usage >&2; exit 1 ;;
+esac

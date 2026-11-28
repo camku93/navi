@@ -192,9 +192,13 @@ install_dotfiles() {
 	done < <(find "$NAVI_DIR/dotfiles" "$NAVI_DIR/docs" "$NAVI_DIR/wallpapers" "$NAVI_DIR/themes" -type f -print0)
 	chmod +x "$HOME/.xinitrc"
 
-	if cmp -s "$HOME/.config/mimeapps.list" "$NAVI_DIR/dotfiles/config/navi-mimeapps.list"; then
+	if cmp -s "$HOME/.config/mimeapps.list" "$NAVI_DIR/system/navi-mimeapps.list"; then
 		mkdir -p "$BACKUP/.config"
 		mv "$HOME/.config/mimeapps.list" "$BACKUP/.config/mimeapps.list"
+	fi
+	if [ -e "$HOME/.config/navi-mimeapps.list" ]; then
+		mkdir -p "$BACKUP/.config"
+		mv "$HOME/.config/navi-mimeapps.list" "$BACKUP/.config/navi-mimeapps.list"
 	fi
 	local lfd="$HOME/.local/share/applications/lf.desktop"
 	if [ -f /usr/share/applications/lf.desktop ] && { [ ! -e "$lfd" ] || grep -q '^NotShowIn=navi;' "$lfd"; }; then
@@ -206,6 +210,7 @@ install_system_files() {
 	say "Installing system files"
 
 	sudo install -Dm644 "$NAVI_DIR/system/30-touchpad.conf" /etc/X11/xorg.conf.d/30-touchpad.conf
+	sudo install -Dm644 "$NAVI_DIR/system/navi-mimeapps.list" /etc/xdg/navi-mimeapps.list
 
 	# Index the X bitmap fonts (slock uses Terminus)
 	if [ -d /usr/share/fonts/misc ] && command -v mkfontscale >/dev/null 2>&1; then

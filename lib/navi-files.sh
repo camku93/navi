@@ -26,6 +26,7 @@ navi_dest() {
 	wallpapers/wallpaper.jpg) printf '%s' "$HOME/Pictures/Wallpapers/wallpaper.jpg" ;;
 	src/dwm/* | src/dwmblocks/* | src/st/* | src/slock/*) printf '%s' "$HOME/.local/src/${1#src/}" ;;
 	system/30-touchpad.conf) printf '%s' /etc/X11/xorg.conf.d/30-touchpad.conf ;;
+	system/navi-mimeapps.list) printf '%s' /etc/xdg/navi-mimeapps.list ;;
 	*) return 1 ;;
 	esac
 }

@@ -1,0 +1,37 @@
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.TH NAVI-DEFAULTS 1 2026-11-27 Navi "Navi Manual"
+.nh
+.SH NAME
+navi-defaults \- choose which programs open your files
+.SH SYNOPSIS
+.B navi-defaults
+.br
+.B navi-defaults list
+.RI [ category ]
+.br
+.B navi-defaults set
+.I category program
+.br
+.B navi-defaults reset
+.I category
+.SH DESCRIPTION
+Run
+.B navi-defaults
+by itself to pick a category, then a program, from a menu.
+The menu lists the installed programs that can open that kind of file.
+.PP
+Your choices are saved in
+.IR ~/.config/mimeapps.list ,
+the standard place for them, so they also apply in other desktops.
+Navi's own defaults are in
+.I /etc/xdg/navi-mimeapps.list
+and only apply in Navi, when you haven't chosen something else.
+.SH CATEGORIES
+Web browser, Videos, Music, Images, PDFs and books, Text files.
+.SH EXAMPLES
+.TP
+.B navi-defaults set Videos vlc
+Open videos with VLC.
+.TP
+.B navi-defaults reset Videos
+Go back to Navi's default for videos.

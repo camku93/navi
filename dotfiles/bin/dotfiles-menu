@@ -12,7 +12,7 @@ declare -A configs=(
 	["Desktop: picom"]="$HOME/.config/picom/picom.conf"
 	["Desktop: dunst"]="$HOME/.config/dunst/dunstrc"
 	["Desktop: GTK theme"]="$HOME/.config/gtk-3.0/settings.ini"
-	["Desktop: default apps"]="$HOME/.config/navi-mimeapps.list"
+	["Desktop: default programs"]="run:navi-defaults"
 	["Menus: launcher"]="$HOME/.config/rofi/launcher.rasi"
 	["Menus: menu"]="$HOME/.config/rofi/menu.rasi"
 	["Menus: power menu"]="$HOME/.config/rofi/power-menu.rasi"
@@ -51,4 +51,7 @@ choice=$(printf '%s\n' "${!configs[@]}" | sort \
 [ -z "$choice" ] && exit
 
 file="${configs[$choice]}"
+case $file in
+run:*) exec ${file#run:} ;;
+esac
 setsid -f "${TERMINAL:-st}" -e "${EDITOR:-vim}" "$file"
