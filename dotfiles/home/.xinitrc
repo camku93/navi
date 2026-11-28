@@ -36,6 +36,7 @@ agents=$(systemctl --user list-units --state=active --plain --no-legend 'gpg-age
 gpgconf --kill gpg-agent
 gpg-agent --daemon --default-cache-ttl 34560000 --max-cache-ttl 34560000 >/dev/null 2>&1
 mbsync-loop &
+navi-update-check --loop &
 xset dpms 0 0 900
 xset +fp /usr/share/fonts/misc
 xset fp rehash

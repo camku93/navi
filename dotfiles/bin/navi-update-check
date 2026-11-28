@@ -1,0 +1,128 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+NAVI_SIGNAL=17
+SYSTEM_SIGNAL=19
+REPO=$(cat "$HOME/.config/navi/repo" 2>/dev/null)
+CONF="$HOME/.config/navi"
+STATE="${XDG_CACHE_HOME:-$HOME/.cache}/navi-update-check"
+DAY=86400
+
+target() {
+	up=$(git -C "$REPO" rev-parse '@{u}' 2>/dev/null) || return 1
+	head=$(git -C "$REPO" rev-parse HEAD) || return 1
+	if git -C "$REPO" merge-base --is-ancestor "$head" "$up"; then
+		printf '%s' "$up"
+	elif git -C "$REPO" merge-base --is-ancestor "$up" "$head"; then
+		printf '%s' "$head"
+	else
+		printf '%s' "$up"
+	fi
+}
+
+available() {
+	[ -n "$REPO" ] && [ -d "$REPO/.git" ] || return 1
+	[ -s "$CONF/rebuild-pending" ] && return 0
+	t=$(target) || return 1
+	v=$(cat "$CONF/version" 2>/dev/null)
+	[ -n "$v" ] || v=$(git -C "$REPO" rev-parse HEAD)
+	[ "$v" != "$t" ]
+}
+
+notify() {
+	command -v notify-send >/dev/null || return 0
+	tag=$1 title=$2 body=$3 cmd=$4
+	(
+		action=$(notify-send -h "string:x-dunst-stack-tag:$tag" -A "default=Update now" \
+			"$title" "$body" 2>/dev/null)
+		[ "$action" = default ] && setsid -f "${TERMINAL:-st}" -e "$cmd"
+	) &
+}
+
+navi_summary() {
+	available || { echo "Navi is up to date."; return; }
+	t=$(target)
+	v=$(cat "$CONF/version" 2>/dev/null)
+	if [ -n "$v" ] && git -C "$REPO" merge-base --is-ancestor "$v" "$t" 2>/dev/null; then
+		git -C "$REPO" --no-pager log --format='%s' -n 5 "$v..$t"
+		n=$(git -C "$REPO" rev-list --count "$v..$t")
+		[ "$n" -gt 5 ] && echo "and $((n - 5)) more"
+	fi
+}
+
+navi_check() {
+	[ -n "$REPO" ] && [ -d "$REPO/.git" ] || return 0
+	GIT_TERMINAL_PROMPT=0 timeout 60 git -C "$REPO" fetch --quiet >/dev/null 2>&1
+	pkill -RTMIN+$NAVI_SIGNAL dwmblocks
+	mkdir -p "$STATE"
+	if available; then
+		t=$(target)
+		if [ "$t" != "$(cat "$STATE/navi-notified" 2>/dev/null)" ]; then
+			printf '%s\n' "$t" > "$STATE/navi-notified"
+			notify navi-update "Navi update available" "$(navi_summary)" navi-update
+		fi
+	fi
+}
+
+system_list() {
+	db=$(mktemp -d) || return 1
+	out=$(CHECKUPDATES_DB="$db" timeout 30 checkupdates --nocolor 2>/dev/null)
+	code=$?
+	rm -rf "$db"
+	[ $code -eq 0 ] || [ $code -eq 2 ] || return 1
+	[ -n "$out" ] && printf '%s\n' "$out"
+	if command -v yay >/dev/null; then
+		LC_ALL=C timeout 30 yay -Qua --color never </dev/null 2>/dev/null | grep -v '\[ignored\]$'
+	fi
+	if command -v flatpak >/dev/null; then
+		timeout 30 flatpak remote-ls --updates --columns=application 2>/dev/null | sed 's/^/flatpak: /'
+	fi
+	return 0
+}
+
+system_check() {
+	mkdir -p "$STATE"
+	command -v checkupdates >/dev/null || return 0
+	list=$(system_list) || return 0
+	printf '%s\n' "$list" | sed '/^$/d' > "$STATE/system"
+	date +%s > "$STATE/system-time"
+	pkill -RTMIN+$SYSTEM_SIGNAL dwmblocks
+	n=$(wc -l < "$STATE/system")
+	[ "$n" -gt 0 ] || { rm -f "$STATE/system-notified"; return 0; }
+	cmp -s "$STATE/system" "$STATE/system-notified" && return 0
+	cp "$STATE/system" "$STATE/system-notified"
+	[ "$n" -eq 1 ] && msg="1 update available" || msg="$n updates available"
+	notify system-update "System updates" "$msg" sys-update
+}
+
+system_summary() {
+	n=$(wc -l < "$STATE/system" 2>/dev/null || echo 0)
+	[ "$n" -gt 0 ] || { echo "No system updates."; return; }
+	awk '{print $1}' "$STATE/system" | head -n 10
+	[ "$n" -gt 10 ] && echo "and $((n - 10)) more"
+}
+
+due() {
+	last=$(cat "$STATE/system-time" 2>/dev/null || echo 0)
+	[ $(( $(date +%s) - last )) -ge $DAY ]
+}
+
+case ${1:-} in
+"") available ;;
+--count) wc -l < "$STATE/system" 2>/dev/null || echo 0 ;;
+--fetch) navi_check ;;
+--system) system_check ;;
+--summary) navi_summary ;;
+--system-summary) system_summary ;;
+--loop)
+	sleep 120
+	navi_check
+	system_check
+	while sleep 3600 && xset q >/dev/null 2>&1; do
+		navi_check
+		due && system_check
+	done ;;
+*)
+	echo "Usage: navi-update-check [--count | --fetch | --system | --summary | --system-summary | --loop]" >&2
+	exit 1 ;;
+esac

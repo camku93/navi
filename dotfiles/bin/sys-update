@@ -137,4 +137,6 @@ if [ ! -d "/usr/lib/modules/$(uname -r)" ]; then
 	fi
 fi
 
+navi-update-check --system >/dev/null 2>&1 &
+
 read -r -p "Press Enter to close."

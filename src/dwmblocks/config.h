@@ -6,6 +6,8 @@ static const Block blocks[] = {
 	{ "",	"sb-internet",	5,		4 },
 	{ "",	"sb-battery",	5,		3 },
 	{ "",	"sb-time",	5,		1 },
+	{ "",	"sb-navi-update",	0,		17 },
+	{ "",	"sb-sys-updates",	0,		19 },
 	{ "",	"sb-mailbox",	180,		12 },
 	{ "",	"sb-help-icon",	0,		15 },
 	{ "",	"power-icon",	0,		16 },

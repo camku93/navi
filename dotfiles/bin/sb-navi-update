@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# shellcheck source=/dev/null
+. ~/.local/bin/bar-colors.sh
+
+icon_update=$(printf '\U000f06b0')
+
+case $BLOCK_BUTTON in
+	1) setsid -f "$TERMINAL" -e navi-update ;;
+	3) notify-send "Navi update" "$(navi-update-check --summary)
+Left click to update." ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+navi-update-check && bar_button "$icon_update"
+exit 0

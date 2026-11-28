@@ -412,6 +412,7 @@ undo() {
 	[ -x "$HOME/.local/bin/navi-theme" ] && "$HOME/.local/bin/navi-theme" --login
 	BACKUP=
 	[ $restored -eq 1 ] && NOTES+=("Running navi-update again will offer this update again.")
+	pkill -RTMIN+17 dwmblocks
 	report "The last update was put back"
 	pause
 }
@@ -513,5 +514,6 @@ git -C "$REPO" diff --quiet "$BASE" "$TARGET" -- install.sh \
 	|| NOTES+=("The installer changed too. Anything it sets up outside your files (services, shell, packages) is only applied by running it again.")
 
 printf '%s\n' "$TARGET" > "$CONF/version"
+pkill -RTMIN+17 dwmblocks
 report "Navi is updated"
 pause
