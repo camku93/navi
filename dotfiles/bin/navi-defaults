@@ -35,38 +35,38 @@ Categories: ${CATEGORIES[*]}
 EOF
 }
 
-field() { sed -n "/^\[Desktop Entry\]/,/^\[/{s/^$1=//p}" "$2" | head -n 1; }
-
-shows_in_navi() {
-	local f=$1 only not
-	only=$(field OnlyShowIn "$f")
-	not=$(field NotShowIn "$f")
-	[ -n "$only" ] && [[ ";$only;" != *";navi;"* ]] && return 1
-	[[ ";$not;" == *";navi;"* ]] && return 1
-	[ "$(field Hidden "$f")" = true ] && return 1
-	return 0
-}
-
 programs() {
-	local cat=$1 d f id mime t seen=" " cur
-	cur=$(current "$cat")
+	local cat=$1 cur=${2:-} d files=()
 	for d in "${DIRS[@]}"; do
-		for f in "$d"/*.desktop; do
-			[ -f "$f" ] || continue
-			id=${f##*/}
-			[[ $seen == *" $id "* ]] && continue
-			seen+="$id "
-			shows_in_navi "$f" || continue
-			[ "$(field NoDisplay "$f")" = true ] && [ "$id" != "$cur" ] && continue
-			mime=";$(field MimeType "$f");"
-			for t in $(types "$cat"); do
-				if [[ $mime == *";$t;"* ]]; then
-					printf '%s\t%s\n' "$id" "$(field Name "$f")"
-					break
-				fi
-			done
-		done
-	done | sort -t $'\t' -k2,2f
+		for f in "$d"/*.desktop; do [ -f "$f" ] && files+=("$f"); done
+	done
+	[ ${#files[@]} -gt 0 ] || return 0
+	awk -v types="$(types "$cat")" -v cur="$cur" '
+	function finish() {
+		if (file == "" || seen[id]++) return
+		if (hidden == "true") return
+		if (only != "" && index(";" only ";", ";navi;") == 0) return
+		if (index(";" not ";", ";navi;")) return
+		if (id == cur) { print id "\t" name; return }
+		if (nodisplay == "true") return
+		for (t in want)
+			if (index(";" mime ";", ";" t ";")) { print id "\t" name; return }
+	}
+	BEGIN { n = split(types, list, " "); for (i = 1; i <= n; i++) want[list[i]] = 1 }
+	FNR == 1 {
+		finish()
+		file = FILENAME; id = file; sub(/.*\//, "", id)
+		insec = 0; name = only = not = hidden = nodisplay = mime = ""
+	}
+	/^\[/ { insec = ($0 == "[Desktop Entry]"); next }
+	insec && /^Name=/ && name == "" { name = substr($0, 6) }
+	insec && /^OnlyShowIn=/ { only = substr($0, 12) }
+	insec && /^NotShowIn=/ { not = substr($0, 11) }
+	insec && /^Hidden=/ { hidden = substr($0, 8) }
+	insec && /^NoDisplay=/ { nodisplay = substr($0, 11) }
+	insec && /^MimeType=/ { mime = substr($0, 10) }
+	END { finish() }
+	' "${files[@]}" | sort -t $'\t' -k2,2f
 }
 
 current() {
@@ -128,7 +128,7 @@ menu() {
 	while IFS=$'\t' read -r id name; do
 		ids+=("$id")
 		labels+=("$name")
-	done < <(programs "$cat")
+	done < <(programs "$cat" "$cur")
 
 	{
 		for i in "${!ids[@]}"; do
@@ -162,7 +162,7 @@ list)
 	if [ $# -ge 2 ]; then
 		valid "$2"
 		cur=$(current "$2")
-		programs "$2" | while IFS=$'\t' read -r id name; do
+		programs "$2" "$cur" | while IFS=$'\t' read -r id name; do
 			[ "$id" = "$cur" ] && printf '* ' || printf '  '
 			printf '%s (%s)\n' "$name" "$id"
 		done
