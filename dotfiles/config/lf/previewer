@@ -33,7 +33,7 @@ text() {
 	bat=bat
 	have bat || bat=batcat
 	if have "$bat"; then
-		"$bat" --color=always --style=plain --line-range=:200 "$@" -- "$file"
+		"$bat" --color=always --theme=ansi --style=plain --line-range=:200 "$@" -- "$file"
 	else
 		head -n 200 -- "$file"
 	fi

@@ -40,7 +40,6 @@ declare -A configs=(
 	["Tools: screenshot"]="$HOME/.local/bin/screenshot"
 	["Tools: display switch"]="$HOME/.local/bin/display-switch"
 	["Tools: this menu"]="$HOME/.local/bin/dotfiles-menu"
-	["Monitors: btop"]="$HOME/.config/btop/btop.conf"
 	["Monitors: htop"]="$HOME/.config/htop/htoprc"
 )
 

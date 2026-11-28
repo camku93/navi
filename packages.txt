@@ -94,7 +94,6 @@ less
 htop
 fastfetch
 libqalculate
-btop
 calcurse
 
 # network, web, printing
