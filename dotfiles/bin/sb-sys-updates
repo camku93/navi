@@ -7,10 +7,11 @@ icon_packages=$(printf '\U000f03d7')
 
 case $BLOCK_BUTTON in
 	1) setsid -f "$TERMINAL" -e sys-update ;;
-	3) notify-send "System updates" "$(navi-update-check --system-summary)" ;;
+	3) notify-send "System updates" "$(navi-update-check --system-summary)
+Left click to update." ;;
 	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
 esac
 
 count=$(navi-update-check --count)
-[ "${count:-0}" -gt 0 ] && bar_button "$icon_packages" "$count"
+[ "${count:-0}" -gt 0 ] && bar_button "$icon_packages"
 exit 0

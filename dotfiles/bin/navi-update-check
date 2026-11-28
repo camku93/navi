@@ -113,6 +113,7 @@ system_summary() {
 	list=$(pending)
 	[ -n "$list" ] || { echo "No system updates."; return; }
 	n=$(printf '%s\n' "$list" | wc -l)
+	[ "$n" -eq 1 ] && echo "1 update:" || echo "$n updates:"
 	printf '%s\n' "$list" | awk '{print $1}' | head -n 10
 	[ "$n" -gt 10 ] && echo "and $((n - 10)) more"
 }
