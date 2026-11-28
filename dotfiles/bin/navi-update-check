@@ -95,10 +95,25 @@ system_check() {
 	notify system-update "System updates" "$msg" sys-update
 }
 
+pending() {
+	f="$STATE/system"
+	[ -s "$f" ] || return 0
+	# shellcheck disable=SC2046
+	installed=$(pacman -Q $(awk '$3 == "->" {print $1}' "$f") 2>/dev/null)
+	awk -v installed="$installed" '
+		BEGIN {
+			n = split(installed, lines, "\n")
+			for (i = 1; i <= n; i++) { split(lines[i], p, " "); have[p[1]] = p[2] }
+		}
+		$3 != "->" { print; next }
+		($1 in have) && have[$1] != $4' "$f"
+}
+
 system_summary() {
-	n=$(wc -l < "$STATE/system" 2>/dev/null || echo 0)
-	[ "$n" -gt 0 ] || { echo "No system updates."; return; }
-	awk '{print $1}' "$STATE/system" | head -n 10
+	list=$(pending)
+	[ -n "$list" ] || { echo "No system updates."; return; }
+	n=$(printf '%s\n' "$list" | wc -l)
+	printf '%s\n' "$list" | awk '{print $1}' | head -n 10
 	[ "$n" -gt 10 ] && echo "and $((n - 10)) more"
 }
 
@@ -109,12 +124,15 @@ due() {
 
 case ${1:-} in
 "") available ;;
---count) wc -l < "$STATE/system" 2>/dev/null || echo 0 ;;
+--count) pending | grep -c . ;;
 --fetch) navi_check ;;
 --system) system_check ;;
 --summary) navi_summary ;;
 --system-summary) system_summary ;;
 --loop)
+	for pid in $(pgrep -f 'navi-update-check --loop'); do
+		[ "$pid" != "$$" ] && kill "$pid" 2>/dev/null
+	done
 	sleep 120
 	navi_check
 	system_check
