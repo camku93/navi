@@ -135,6 +135,8 @@ static const Key keys[] = {
 	{ Mod4Mask,			XK_F5,	   spawn,	   SHCMD("usb-mount") },
 	{ Mod4Mask|ShiftMask,		XK_F5,	   spawn,	   SHCMD("usb-unmount") },
 	{ Mod4Mask,			XK_F6,	   spawn,	   SHCMD("navi-scale") },
+	{ Mod4Mask,			XK_F7,	   spawn,	   SHCMD("navi-defaults") },
+	{ Mod4Mask|ShiftMask,		XK_F7,	   spawn,	   SHCMD("navi-theme -m") },
 	{ Mod4Mask,			XK_F9,	   spawn,	   SHCMD("record-toggle audio") },
 	{ Mod4Mask|ShiftMask,		XK_F9,	   spawn,	   SHCMD("record-toggle desktop") },
 	{ Mod4Mask,			XK_F10,	   spawn,	   SHCMD("record-toggle screen") },

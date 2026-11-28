@@ -81,6 +81,8 @@
 | Super+F5 | Mount USB or disc |
 | Super+Shift+F5 | Unmount USB or disc |
 | Super+F6 | Display scale |
+| Super+F7 | Default programs |
+| Super+Shift+F7 | Theme |
 | Super+F9 | Toggle microphone recording |
 | Super+Shift+F9 | Toggle desktop audio recording |
 | Super+F10 | Toggle screen recording |
