@@ -246,13 +246,17 @@ menu() {
 	cur=$(current)
 	pick=$(list_themes | rofi -dmenu -i -no-custom -p "Theme" \
 		-select "$cur" -theme ~/.config/rofi/menu.rasi) || exit 0
-	[ -n "$pick" ] && apply "$pick"
+	[ -n "$pick" ] || exit 0
+	apply "$pick" >/dev/null
+	command -v notify-send >/dev/null && notify-send "Theme" "Switched to ${name:-$pick}." 2>/dev/null
+	return 0
 }
 
 apply() {
 	load "$1" || exit 1
 	write_files
 	reload
+	printf 'Switched to %s.\n' "${name:-$1}"
 }
 
 case ${1:-} in
@@ -265,7 +269,10 @@ case ${1:-} in
 -m | --menu) menu ;;
 -r | --reapply) apply "$(current)" ;;
 --login)
-	load "$(current)" || load navi || exit 1
+	if ! load "$(current)" 2>/dev/null; then
+		printf 'navi-theme: your theme, %s, is missing. Using navi.\n' "$(current)" >&2
+		load navi || exit 1
+	fi
 	write_files
 	[ -n "${DISPLAY:-}" ] && xrdb -merge "$OUT/Xresources"
 	exit 0 ;;
